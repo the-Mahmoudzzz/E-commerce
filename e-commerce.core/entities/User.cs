@@ -13,7 +13,10 @@ namespace e_commerce.core.entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeletedAt { get; set; } 
         public DateTime? UpdateddAt { get; set; } 
-        
-        
+        public ICollection<Product> Products { get; set; } = new List<Product>();
+        public ICollection<Category> CreatedCategories { get; set; } = new List<Category>();
+
+
+
     }
 }
