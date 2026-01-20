@@ -23,6 +23,7 @@ namespace e_commerce.core.entities
         public virtual ShippingZone ShippingZone { get; set; }
         public virtual ICollection<Notification> Notifications { get; set; }
         public virtual ICollection<UserAddresse> UserAddresses { get; set; }
+        public virtual ICollection<Withdrawal> Withdrawals { get; set; }
 
 
 
