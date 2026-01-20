@@ -26,6 +26,8 @@ namespace e_commerce.core.entities
         public int CreatedByAdminId { get; set; }
         [ForeignKey("CreatedByAdminId")]
         public User CreatedByAdmin { get; set; } = null!;
+        public virtual ICollection<ShoppingCartItem> Items { get; set; }
+
 
 
     }

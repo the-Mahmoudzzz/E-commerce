@@ -9,5 +9,6 @@ namespace e_commerce.core.entities
     public class Order
     {
         public int Id { get; set; }
+        public Shipment shipment { get; set; }
     }
 }
