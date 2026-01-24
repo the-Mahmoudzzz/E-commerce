@@ -25,6 +25,9 @@ namespace e_commerce.core.entities
         public virtual ICollection<UserAddresse> UserAddresses { get; set; }
         public virtual ICollection<Withdrawal> Withdrawals { get; set; }
 
+        public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
+        public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+        public virtual SellerWallet? SellerWallet { get; set; }
 
 
     }
