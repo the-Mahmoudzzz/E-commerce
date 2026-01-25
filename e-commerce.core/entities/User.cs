@@ -17,7 +17,7 @@ namespace e_commerce.core.entities
         public DateTime? UpdateddAt { get; set; } 
         public ICollection<Product> Products { get; set; } = new List<Product>();
 
-        public DateTime? UpdateddAt { get; set; }
+       
         [InverseProperty(nameof(Product.CreatedByAdmin))]
         public ICollection<Product> CreatedProducts { get; set; } = new List<Product>();
         [InverseProperty(nameof(Product.Seller))]

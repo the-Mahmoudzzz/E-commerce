@@ -12,8 +12,8 @@ using e_commerce.infra.Data;
 namespace e_commerce.infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260125151158_init1")]
-    partial class init1
+    [Migration("20260125154821_m")]
+    partial class m
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -459,6 +459,9 @@ namespace e_commerce.infra.Migrations
                     b.Property<int>("SellerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -466,6 +469,8 @@ namespace e_commerce.infra.Migrations
                     b.HasIndex("CreatedByAdminId");
 
                     b.HasIndex("SellerId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Product");
                 });
@@ -985,6 +990,10 @@ namespace e_commerce.infra.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("e_commerce.core.entities.User", null)
+                        .WithMany("Products")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Category");
 
                     b.Navigation("CreatedByAdmin");
@@ -1162,6 +1171,8 @@ namespace e_commerce.infra.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("Products");
 
                     b.Navigation("SellerWallet");
 
