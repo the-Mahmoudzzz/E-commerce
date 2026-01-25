@@ -13,17 +13,17 @@ namespace e_commerce.core.entities
     {
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeletedAt { get; set; } 
-<<<<<<< Updated upstream
+
         public DateTime? UpdateddAt { get; set; } 
         public ICollection<Product> Products { get; set; } = new List<Product>();
-=======
+
         public DateTime? UpdateddAt { get; set; }
         [InverseProperty(nameof(Product.CreatedByAdmin))]
         public ICollection<Product> CreatedProducts { get; set; } = new List<Product>();
         [InverseProperty(nameof(Product.Seller))]
         public ICollection<Product> SoldProducts { get; set; } = new List<Product>();
         public ICollection<Order> Orders { get; set; }= new List<Order>();
->>>>>>> Stashed changes
+
         public ICollection<Category> CreatedCategories { get; set; } = new List<Category>();
         public ShopingCart shopingCart { get; set; }
         public int ShippingZoneId { get; set; } 
@@ -34,6 +34,9 @@ namespace e_commerce.core.entities
         public virtual ICollection<UserAddresse> UserAddresses { get; set; }
         public virtual ICollection<Withdrawal> Withdrawals { get; set; }
 
+        public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
+        public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+        public virtual SellerWallet? SellerWallet { get; set; }
 
 
     }

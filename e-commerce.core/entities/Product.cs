@@ -25,6 +25,7 @@ namespace e_commerce.core.entities
         public User Seller { get; set; } = null!;
         public int CreatedByAdminId { get; set; }
         [ForeignKey("CreatedByAdminId")]
+        [InverseProperty("ProductsApproved")]
         public User CreatedByAdmin { get; set; } = null!;
         public virtual ICollection<ShoppingCartItem> Items { get; set; }
 

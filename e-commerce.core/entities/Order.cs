@@ -36,8 +36,6 @@ namespace e_commerce.core.entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal FinalAmount { get; set; }
 
-        public int? PaymentId { get; set; }
-        [ForeignKey("PaymentId")]
         public virtual Payment? Payment { get; set; }
 
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
