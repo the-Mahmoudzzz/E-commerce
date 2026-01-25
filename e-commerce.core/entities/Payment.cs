@@ -19,6 +19,7 @@ namespace e_commerce.core.entities
         [ForeignKey("OrderId")]
         public virtual Order Order { get; set; } = null!;
 
+
         public string PaymentMethod { get; set; } = string.Empty;
 
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
