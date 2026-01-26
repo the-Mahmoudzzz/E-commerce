@@ -53,6 +53,15 @@ namespace e_commerce.api
                 };
             
             });
+
+
+
+
+
+
+
+
+
             builder.Services.AddSwaggerGen(option =>
             {
                 option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
