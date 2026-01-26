@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace e_commerce.infra.Migrations
 {
     /// <inheritdoc />
-    public partial class init1 : Migration
+    public partial class m : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -432,7 +432,8 @@ namespace e_commerce.infra.Migrations
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CategoryId = table.Column<int>(type: "int", nullable: false),
                     SellerId = table.Column<int>(type: "int", nullable: false),
-                    CreatedByAdminId = table.Column<int>(type: "int", nullable: false)
+                    CreatedByAdminId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -449,6 +450,11 @@ namespace e_commerce.infra.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.NoAction);
+                    table.ForeignKey(
+                        name: "FK_Product_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Product_categories_CategoryId",
                         column: x => x.CategoryId,
@@ -726,6 +732,11 @@ namespace e_commerce.infra.Migrations
                 name: "IX_Product_SellerId",
                 table: "Product",
                 column: "SellerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_UserId",
+                table: "Product",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductReviews_ProductId",
