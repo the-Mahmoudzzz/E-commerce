@@ -26,7 +26,7 @@ namespace e_commerce.core.entities
 
         public ICollection<Category> CreatedCategories { get; set; } = new List<Category>();
         public ShopingCart shopingCart { get; set; }
-        public int ShippingZoneId { get; set; } 
+        public int? ShippingZoneId { get; set; } 
 
         [ForeignKey("ShippingZoneId")]
         public virtual ShippingZone ShippingZone { get; set; }
