@@ -12,8 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
+<<<<<<< Updated upstream
     <Folder Include="Dto\" />
     <Folder Include="interface\" />
+=======
+>>>>>>> Stashed changes
     <Folder Include="servieses\impelmentaion\" />
     <Folder Include="servieses\iserviese\" />
   </ItemGroup>
