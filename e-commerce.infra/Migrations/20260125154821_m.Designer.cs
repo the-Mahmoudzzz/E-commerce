@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using e_commerce.infra.Data;
 
@@ -11,9 +12,11 @@ using e_commerce.infra.Data;
 namespace e_commerce.infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260125154821_m")]
+    partial class m
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -699,11 +702,7 @@ namespace e_commerce.infra.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-<<<<<<< HEAD
-                    b.Property<int?>("ShippingZoneId")
-=======
                     b.Property<int>("ShippingZoneId")
->>>>>>> 010080247d0a00ae2a5f278c80d8f8a0ee7aba09
                         .HasColumnType("int");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -1077,13 +1076,9 @@ namespace e_commerce.infra.Migrations
                 {
                     b.HasOne("e_commerce.core.entities.ShippingZone", "ShippingZone")
                         .WithMany("Customers")
-<<<<<<< HEAD
-                        .HasForeignKey("ShippingZoneId");
-=======
                         .HasForeignKey("ShippingZoneId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
->>>>>>> 010080247d0a00ae2a5f278c80d8f8a0ee7aba09
 
                     b.Navigation("ShippingZone");
                 });
