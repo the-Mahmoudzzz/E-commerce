@@ -14,14 +14,15 @@ namespace e_commerce.api.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
-        public AccountController(UserManager<User> userManager,RoleManager<IdentityRole<int>>roleManager) 
+        public AccountController(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
         {
             _userManager = userManager;
-            _roleManager=roleManager;
+            _roleManager = roleManager;
         }
         [HttpPost]
-        public async Task<IActionResult> Rigester(RegisterDto register) {
-            if(! ModelState.IsValid||register is null)
+        public async Task<IActionResult> Rigester(RegisterDto register)
+        {
+            if (!ModelState.IsValid || register is null)
             {
                 return BadRequest(ModelState);
             }
@@ -30,21 +31,22 @@ namespace e_commerce.api.Controllers
                 UserName = register.Name,
                 Email = register.Email,
                 PhoneNumber = register.PhoneNumber,
-               
+
             };
-            
-           IdentityResult result= await _userManager.CreateAsync(user,register.Password);
-            if (result.Succeeded) {
+
+            IdentityResult result = await _userManager.CreateAsync(user, register.Password);
+            if (result.Succeeded)
+            {
 
                 string roleName = register.UserRole.ToString();
                 if (!await _roleManager.RoleExistsAsync(roleName))
                 {
-                    await _roleManager.CreateAsync(new AppRole { Name = roleName });
+                    await _roleManager.CreateAsync(new IdentityRole<int> { Name = roleName });
                 }
                 await _userManager.AddToRoleAsync(user, roleName);
 
                 return Ok(new { Message = $"User registered as {roleName} successfully" });
-               
+
             }
 
             return BadRequest(result.Errors);

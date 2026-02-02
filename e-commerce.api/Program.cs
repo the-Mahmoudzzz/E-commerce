@@ -1,6 +1,11 @@
 
+using e_commerce.app.Mapping;
+using e_commerce.app.Services.IServices;
+using e_commerce.app.servieses;
+using e_commerce.app.Interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
+using e_commerce.infra.reposatory;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using AutoMapper;
 
 namespace e_commerce.api
 {
@@ -25,7 +31,8 @@ namespace e_commerce.api
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<AppDbContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
-            builder.Services.AddIdentity<User, IdentityRole<int>>(options => {
+            builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
+            {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 6;
                 options.Password.RequireUppercase = false;
@@ -89,6 +96,9 @@ namespace e_commerce.api
         }
     });
             });
+            builder.Services.AddScoped<IFeedbackService, FeedBackService>();
+            builder.Services.AddScoped<IFeedBackRepo, FeedbackRepository>();
+            builder.Services.AddAutoMapper(typeof(FeedbackProfile));
 
             var app = builder.Build();
 

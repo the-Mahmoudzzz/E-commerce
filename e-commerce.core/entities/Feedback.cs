@@ -13,6 +13,14 @@ namespace e_commerce.core.entities
         public int UserId { get; set; }
         public virtual User Customer { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public FeedbackType Type { get; set; }
 
+    }
+    public enum FeedbackType
+    {
+        Complaint, 
+        Suggestion, 
+        BugReport, 
+        General 
     }
 }
