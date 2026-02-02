@@ -1,31 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>e_commerce.app</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<RootNamespace>e_commerce.app</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\e-commerce.core\e-commerce.core.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\e-commerce.core\e-commerce.core.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-<<<<<<< Updated upstream
-    <Folder Include="Dto\" />
-<<<<<<< HEAD
-    <Folder Include="interface\" />
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> 010080247d0a00ae2a5f278c80d8f8a0ee7aba09
-    <Folder Include="servieses\impelmentaion\" />
-    <Folder Include="servieses\iserviese\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Services\Implementation\" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="AutoMapper" Version="12.0.0" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+	</ItemGroup>
 
 </Project>
