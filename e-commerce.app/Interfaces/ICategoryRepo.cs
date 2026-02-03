@@ -1,4 +1,5 @@
-﻿using System;
+﻿using e_commerce.core.entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,10 +7,12 @@ using System.Threading.Tasks;
 
 namespace e_commerce.app.Interfaces
 {
-     interface ICategoryRepo
+     public interface ICategoryRepo
     {
-        Task AddAsync(Category feedback);
-        Task<IEnumerable<Feedback>> GetAllAsync();
-        Task<IEnumerable<Feedback>> GetByTypeAsync(FeedbackType feedbackType);
+        Task AddAsync(Category category);
+        Task<IEnumerable<Category>> GetAllAsync();
+        Task<Category> GetbyIdAsync(int id);
+        Task<Category> UpdateAsync(Category category);
+        Task DeleteAsync(int id);
     }
 }

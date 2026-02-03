@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using e_commerce.app.Dto.FeedBackDTO;
-using e_commerce.app.Interfaces;
+using e_commerce.app.Services;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
 using System;
