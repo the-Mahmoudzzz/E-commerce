@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace e_commerce.app.Dto.CtegoriesDto
 {
-    public class CetegoryDto
+    public class CategoryDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

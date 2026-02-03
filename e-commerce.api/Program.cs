@@ -2,7 +2,6 @@
 using e_commerce.app.Mapping;
 using e_commerce.app.Services.IServices;
 using e_commerce.app.servieses;
-using e_commerce.app.Interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using e_commerce.infra.reposatory;
@@ -14,6 +13,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using AutoMapper;
+using e_commerce.app.Services.Implementation;
+using e_commerce.app.Services;
+using e_commerce.app.Interfaces;
 
 namespace e_commerce.api
 {
@@ -99,6 +101,9 @@ namespace e_commerce.api
             builder.Services.AddScoped<IFeedbackService, FeedBackService>();
             builder.Services.AddScoped<IFeedBackRepo, FeedbackRepository>();
             builder.Services.AddAutoMapper(typeof(FeedbackProfile));
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
+            builder.Services.AddAutoMapper(typeof(CategoryProfile));
 
             var app = builder.Build();
 

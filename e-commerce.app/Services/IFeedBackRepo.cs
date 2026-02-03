@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace e_commerce.app.Interfaces
+namespace e_commerce.app.Services
 {
     public interface IFeedBackRepo
     {

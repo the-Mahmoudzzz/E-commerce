@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using e_commerce.app.Interfaces;
+using e_commerce.app.Services;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using Microsoft.EntityFrameworkCore;
