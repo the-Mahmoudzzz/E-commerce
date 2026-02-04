@@ -14,7 +14,9 @@ namespace e_commerce.app.Mapping
         public CategoryProfile()
         {
             CreateMap< Category, CategoryDto>();
+            CreateMap< Category, SubCategoryDto>().ForMember(dest => dest.ParentCategoryName, opt => opt.MapFrom(src => src.ParentCategory.Name));
             CreateMap< CreateCategoryDto, Category>();
+            CreateMap< CreateSubCategoryDto, Category>();
         }
     }
 }

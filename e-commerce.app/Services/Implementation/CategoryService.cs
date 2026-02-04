@@ -24,13 +24,18 @@ namespace e_commerce.app.Services.Implementation
             
         }
 
-        public IMapper Mapper { get; }
-
         async Task ICategoryService.AddAsync(CreateCategoryDto categoryDto)
         {
            var category= mapper.Map<Category>(categoryDto);
             await repo.AddAsync(category);
         }
+
+        async Task ICategoryService.AddSubCategoryAsync(CreateSubCategoryDto category)
+        {
+            var subcategory = mapper.Map<Category>(category);
+            await repo.AddAsync(subcategory);
+        }
+       
 
         async Task ICategoryService.DeleteAsync(int id)
         {
@@ -43,10 +48,22 @@ namespace e_commerce.app.Services.Implementation
             return  mapper.Map<IEnumerable<CategoryDto>>(categories);
         }
 
+        async Task<IEnumerable<SubCategoryDto>> ICategoryService.GetAllSubCategoryAsync()
+        {
+            var categories = await repo.GetAllSubAsync();
+            return mapper.Map<IEnumerable<SubCategoryDto>>(categories);
+        }
+
         async Task<CategoryDto> ICategoryService.GetbyIdAsync(int id)
         {
             var category=await repo.GetbyIdAsync(id);
             return mapper.Map<CategoryDto>(category);
+        }
+
+        async Task<SubCategoryDto> ICategoryService.GetbyIdSubCategoryAsync(int id)
+        {
+            var category = await repo.GetbyIdSubAsync(id);
+            return mapper.Map<SubCategoryDto>(category);
         }
 
         async Task<Category> ICategoryService.UpdateAsync(CreateCategoryDto category)
@@ -54,6 +71,12 @@ namespace e_commerce.app.Services.Implementation
             var updateCategory=mapper.Map<Category>(category);
            return await repo.UpdateAsync(updateCategory);
 
+        }
+
+       async Task<Category> ICategoryService.UpdateSubCategoryAsync(CreateSubCategoryDto category)
+        {
+            var updateCategory = mapper.Map<Category>(category);
+            return await repo.UpdateAsync(updateCategory);
         }
     }
 }
