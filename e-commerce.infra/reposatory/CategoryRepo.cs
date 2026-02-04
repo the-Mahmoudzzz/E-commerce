@@ -25,6 +25,7 @@ namespace e_commerce.infra.reposatory
             await con.SaveChangesAsync();
             
         }
+      
 
         async Task ICategoryRepo.DeleteAsync(int id)
         {
@@ -41,9 +42,19 @@ namespace e_commerce.infra.reposatory
             return await con.categories.ToListAsync();
         }
 
+        async Task<IEnumerable<Category>> ICategoryRepo.GetAllSubAsync()
+        {
+            return await con.categories.Include(s=>s.ParentCategory).Where(s=>s.ParentCategoryId!=null).ToListAsync();
+        }
+
         Task<Category> ICategoryRepo.GetbyIdAsync(int id)
         {
             return con.categories.FirstOrDefaultAsync(c=>c.Id==id);
+        }
+
+        Task<Category> ICategoryRepo.GetbyIdSubAsync(int id)
+        {
+            return con.categories.Include(s=>s.ParentCategory).FirstOrDefaultAsync(c => c.Id == id && c.ParentCategoryId!=null) ;
         }
 
         async Task<Category> ICategoryRepo.UpdateAsync(Category category)
