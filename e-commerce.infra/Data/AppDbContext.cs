@@ -13,7 +13,7 @@ namespace e_commerce.infra.Data
     public class AppDbContext:IdentityDbContext<User,IdentityRole<int> ,int>
     {
         public AppDbContext (DbContextOptions<AppDbContext> dbContext):base(dbContext) {}
-       
+
         public DbSet<User> users { get; set; }
         public DbSet<Discount> Discounts { get; set; }
         public DbSet<DiscountCategry> DiscountCategries { get; set; }

@@ -17,7 +17,7 @@ namespace e_commerce.core.entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int ?ParentCategoryId{ get; set; }
 
-        [ForeignKey("CategoryId")]
+        [ForeignKey("ParentCategoryId")]
         public Category? ParentCategory { get; set; }
         public ICollection<Category> SubCategories { get; set; } = new List<Category>();
         public ICollection<Product> Products { get; set; } = new List<Product>();
