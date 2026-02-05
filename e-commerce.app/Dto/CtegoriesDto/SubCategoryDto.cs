@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 
 namespace e_commerce.app.Dto.CtegoriesDto
 {
-    public class CreateCategoryDto
+    public class SubCategoryDto
     {
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-
         public string Description { get; set; } = string.Empty;
 
         public string ImageUrl { get; set; } = string.Empty;
-        public int CreatedByAdminId { get; set; }
+        public string ParentCategoryName { get; set; }= string.Empty;
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

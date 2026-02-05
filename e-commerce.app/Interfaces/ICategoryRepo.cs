@@ -11,7 +11,9 @@ namespace e_commerce.app.Interfaces
     {
         Task AddAsync(Category category);
         Task<IEnumerable<Category>> GetAllAsync();
+        Task<IEnumerable<Category>> GetAllSubAsync();
         Task<Category> GetbyIdAsync(int id);
+        Task<Category> GetbyIdSubAsync(int id);
         Task<Category> UpdateAsync(Category category);
         Task DeleteAsync(int id);
     }

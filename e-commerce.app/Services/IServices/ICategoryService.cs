@@ -11,9 +11,13 @@ namespace e_commerce.app.Services.IServices
     public interface ICategoryService
     {
         Task AddAsync(CreateCategoryDto category);
+        Task AddSubCategoryAsync(CreateSubCategoryDto category);
         Task<IEnumerable<CategoryDto>> GetAllAsync();
+        Task<IEnumerable<SubCategoryDto>> GetAllSubCategoryAsync();
         Task<CategoryDto> GetbyIdAsync(int id);
+        Task<SubCategoryDto> GetbyIdSubCategoryAsync(int id);
         Task<Category> UpdateAsync(CreateCategoryDto category);
+        Task<Category> UpdateSubCategoryAsync(CreateSubCategoryDto category);
         Task DeleteAsync(int id);
     }
 }
