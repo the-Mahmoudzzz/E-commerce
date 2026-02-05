@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace e_commerce.app.servieses
+namespace e_commerce.app.Services.Implementation
 {
     public class FeedBackService : IFeedbackService
     {

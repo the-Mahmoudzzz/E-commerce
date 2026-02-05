@@ -24,7 +24,7 @@ namespace e_commerce.app.Services.Implementation
             
         }
 
-        public IMapper Mapper { get; }
+       
 
         async Task ICategoryService.AddAsync(CreateCategoryDto categoryDto)
         {

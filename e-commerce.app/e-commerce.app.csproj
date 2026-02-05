@@ -12,10 +12,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Services\Implementation\" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="12.0.0" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
 	</ItemGroup>

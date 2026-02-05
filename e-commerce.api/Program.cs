@@ -1,7 +1,10 @@
-
 using e_commerce.app.Mapping;
 using e_commerce.app.Services.IServices;
+<<<<<<< Updated upstream
 using e_commerce.app.servieses;
+=======
+using e_commerce.app.Interfaces;
+>>>>>>> Stashed changes
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using e_commerce.infra.reposatory;
@@ -14,8 +17,11 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using AutoMapper;
 using e_commerce.app.Services.Implementation;
+<<<<<<< Updated upstream
 using e_commerce.app.Services;
 using e_commerce.app.Interfaces;
+=======
+>>>>>>> Stashed changes
 
 namespace e_commerce.api
 {
@@ -62,15 +68,6 @@ namespace e_commerce.api
                 };
             
             });
-
-
-
-
-
-
-
-
-
             builder.Services.AddSwaggerGen(option =>
             {
                 option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
