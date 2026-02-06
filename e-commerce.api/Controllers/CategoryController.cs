@@ -82,7 +82,7 @@ namespace e_commerce.api.Controllers
         [HttpDelete]
         public IActionResult Delete(int id) {
             categoryService.DeleteAsync(id);
-            return NoContent();
+            return Ok();
         }
 
     }

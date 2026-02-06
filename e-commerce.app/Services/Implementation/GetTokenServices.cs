@@ -9,7 +9,7 @@ using e_commerce.core.entities;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace e_commerce.app.servieses
+namespace e_commerce.app.Services.Implementation
 {
     public class GetTokenServices:ITokenService
     {
@@ -18,7 +18,7 @@ namespace e_commerce.app.servieses
         public GetTokenServices(IConfiguration configuration)
         {
             this.configuration = configuration;
-            this.symmetricSecurityKey =new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"])) ;
+            symmetricSecurityKey =new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"])) ;
         }
 
         public string GetToken(User user)

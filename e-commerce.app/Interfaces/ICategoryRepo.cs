@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace e_commerce.app.Interfaces
 {
-     public interface ICategoryRepo
+    public interface ICategoryRepo
     {
         Task AddAsync(Category category);
         Task<IEnumerable<Category>> GetAllAsync();
