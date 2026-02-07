@@ -24,7 +24,7 @@ namespace e_commerce.app.Dto
 
         [Required(ErrorMessage = "The imageUrl is required")]
 
-        [Url(ErrorMessage = "Image Url must be valid")]
+        //[Url(ErrorMessage = "Image Url must be valid")]
         public string ImageUrl { get; set; } = string.Empty;
 
 

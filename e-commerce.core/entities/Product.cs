@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace e_commerce.core.entities
 {
+    [Table("Products")]
     public class Product
     {
         public int Id { get; set; }
