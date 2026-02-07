@@ -16,7 +16,7 @@ namespace e_commerce.core.entities
     public class Order
     {
         public int Id { get; set; }
-        public string CustomerId { get; set; } = string.Empty;
+        public int CustomerId { get; set; } 
 
         [ForeignKey("CustomerId")]
         public virtual User Customer { get; set; } = null!;
@@ -36,8 +36,6 @@ namespace e_commerce.core.entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal FinalAmount { get; set; }
 
-        public int? PaymentId { get; set; }
-        [ForeignKey("PaymentId")]
         public virtual Payment? Payment { get; set; }
 
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
