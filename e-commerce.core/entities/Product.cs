@@ -16,7 +16,9 @@ namespace e_commerce.core.entities
         public string ImageUrl { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int Quantity { get; set; }
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = false;
+        public bool IsApproved { get; set; } = false;
+
         public int CategoryId { get; set; }
         [ForeignKey("CategoryId")]
         public Category Category { get; set; } = null!;
@@ -25,11 +27,10 @@ namespace e_commerce.core.entities
         public User Seller { get; set; } = null!;
         public int CreatedByAdminId { get; set; }
         [ForeignKey("CreatedByAdminId")]
-        
         public User CreatedByAdmin { get; set; } = null!;
+        public int? ApprovedByAdminId { get; set; }
+        [ForeignKey("ApprovedByAdminId")]
+        public User? ApprovedByAdmin { get; set; } = null!;
         public virtual ICollection<ShoppingCartItem> Items { get; set; }
-
-
-
     }
 }
