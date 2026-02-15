@@ -20,17 +20,13 @@ namespace e_commerce.core.entities
         public bool IsApproved { get; set; } = false;
 
         public int CategoryId { get; set; }
-        [ForeignKey("CategoryId")]
+        
         public Category Category { get; set; } = null!;
         public int SellerId { get; set; }
-        [ForeignKey("SellerId")]
         public User Seller { get; set; } = null!;
-        public int CreatedByAdminId { get; set; }
-        [ForeignKey("CreatedByAdminId")]
-        public User CreatedByAdmin { get; set; } = null!;
+
         public int? ApprovedByAdminId { get; set; }
-        [ForeignKey("ApprovedByAdminId")]
         public User? ApprovedByAdmin { get; set; } = null!;
-        public virtual ICollection<ShoppingCartItem> Items { get; set; }
+        public virtual ICollection<ShoppingCartItem> Items { get; set; } = new List<ShoppingCartItem>();
     }
 }

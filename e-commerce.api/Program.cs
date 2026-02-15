@@ -1,8 +1,11 @@
-using e_commerce.app.Mapping;
-using e_commerce.app.Services.IServices;
-
+﻿using AutoMapper;
+using e_commerce.app.interfaces;
 using e_commerce.app.Interfaces;
-
+using e_commerce.app.Mapping;
+using e_commerce.app.Services.Implementation;
+using e_commerce.app.Services.IServices;
+using e_commerce.app.servieses.impelmentaion;
+using e_commerce.app.servieses.iserviese;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using e_commerce.infra.reposatory;
@@ -13,15 +16,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using AutoMapper;
-using e_commerce.app.Services.Implementation;
 
 
 namespace e_commerce.api
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +99,8 @@ namespace e_commerce.api
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
             builder.Services.AddAutoMapper(typeof(CategoryProfile));
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             var app = builder.Build();
 

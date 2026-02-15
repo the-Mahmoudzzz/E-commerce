@@ -14,12 +14,8 @@ namespace e_commerce.core.entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeletedAt { get; set; } 
 
-        public DateTime? UpdateddAt { get; set; } 
-        public ICollection<Product> Products { get; set; } = new List<Product>();
+        public DateTime? UpdateddAt { get; set; }
 
-        
-        [InverseProperty(nameof(Product.CreatedByAdmin))]
-        public ICollection<Product> CreatedProducts { get; set; } = new List<Product>();
         [InverseProperty(nameof(Product.Seller))]
         public ICollection<Product> SoldProducts { get; set; } = new List<Product>();
         public ICollection<Order> Orders { get; set; }= new List<Order>();

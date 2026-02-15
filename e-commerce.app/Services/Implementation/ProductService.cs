@@ -131,6 +131,7 @@ namespace e_commerce.app.servieses.impelmentaion
 
             product.IsApproved = dto.IsApproved;
             product.IsActive = dto.IsActive;
+           
 
             await _productRepository.UpdateAsync(product);
         }

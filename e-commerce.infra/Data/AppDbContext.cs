@@ -34,7 +34,32 @@ namespace e_commerce.infra.Data
         public DbSet<Withdrawal> withdrawals { get; set; }
         public DbSet<Product> products { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
+            // seller relationship
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Seller)
+                .WithMany(u => u.SoldProducts)
+                .HasForeignKey(p => p.SellerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //  ApprovedByAdmin relationship
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.ApprovedByAdmin)
+                .WithMany()
+                .HasForeignKey(p => p.ApprovedByAdminId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // 3. منع الأعمدة الوهمية UserId و UserId1 نهائياً
+            modelBuilder.Entity<Product>().Ignore("UserId");
+            modelBuilder.Entity<Product>().Ignore("UserId1");
+
+          
+     
+        }
 
 
     }
