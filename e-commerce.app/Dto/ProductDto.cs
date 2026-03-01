@@ -19,7 +19,7 @@ namespace e_commerce.app.Dto
 
 
         [Required(ErrorMessage = "The price is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zerooo")]
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "The imageUrl is required")]
