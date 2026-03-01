@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Web.App.Services;
 
 
 namespace e_commerce.api
@@ -103,7 +104,11 @@ namespace e_commerce.api
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
             builder.Services.AddAutoMapper(typeof(CategoryProfile));
+            builder.Services.AddScoped<GetTokenServices>();
+            builder.Services.AddScoped<GoogleTokenValidator>();
+           
             builder.Services.AddScoped<SendEmailService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             var app = builder.Build();
 
@@ -115,7 +120,7 @@ namespace e_commerce.api
             }
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 
