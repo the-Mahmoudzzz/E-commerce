@@ -1,5 +1,6 @@
 ﻿using e_commerce.app.Dto;
 using e_commerce.app.Services.ExternalService;
+using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
 using e_commerce.core.Enum;
 using Microsoft.AspNetCore.Http;
@@ -19,11 +20,14 @@ namespace e_commerce.api.Controllers
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly SendEmailService _emailService;
-        public AccountController(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager, SendEmailService emailService)
+        private readonly IAuthService _authService;
+
+        public AccountController(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager, SendEmailService emailService,IAuthService authService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _emailService = emailService;
+            _authService = authService;
         }
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDTO register)
@@ -63,6 +67,18 @@ namespace e_commerce.api.Controllers
                 Message = "User registered successfully. Check your email to confirm the account.",
 
             });
+        }
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDTO dto)
+        {
+            var result = await _authService.LoginAsync(dto);
+            return Ok(result);
+        }
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(string refreshToken)
+        {
+            await _authService.LogoutAsync(refreshToken);
+            return Ok();
         }
     }
 }
