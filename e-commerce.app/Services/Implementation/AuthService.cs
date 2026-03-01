@@ -60,9 +60,13 @@ namespace e_commerce.app.Services.Implementation
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
                 throw new UnauthorizedAccessException();
+            if (!user.EmailConfirmed)
+                throw new Exception("Please confirm your email before logging in");
 
             if (!await _userManager.CheckPasswordAsync(user, dto.Password))
                 throw new UnauthorizedAccessException();
+            
+            
 
             var accessToken = _tokenService.GetToken(user);
 
@@ -70,7 +74,7 @@ namespace e_commerce.app.Services.Implementation
             {
                 Token = GenerateRefreshToken(),
                 Expires = DateTime.UtcNow.AddDays(7),
-                UserId = user.Id.ToString(),
+                UserId = user.Id,
             };
 
             await _refreshRepo.AddAsync(refreshToken);
@@ -146,7 +150,7 @@ namespace e_commerce.app.Services.Implementation
 
             var otp = new Random().Next(100000, 999999).ToString();
             user.ResetPasswordOTP = otp;
-            user.ResetPasswordOTPExpired = DateTime.UtcNow.AddMinutes(10);
+            user.ResetPasswordOTPExpiry = DateTime.UtcNow.AddMinutes(10);
 
             await _userManager.UpdateAsync(user);
 
@@ -162,7 +166,7 @@ namespace e_commerce.app.Services.Implementation
             if (user == null)
                 throw new Exception("User not found");
 
-            if (user.ResetPasswordOTP != otp || user.ResetPasswordOTPExpired < DateTime.UtcNow)
+            if (user.ResetPasswordOTP != otp || user.ResetPasswordOTPExpiry < DateTime.UtcNow)
                 throw new Exception("Invalid or expired OTP");
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -172,7 +176,7 @@ namespace e_commerce.app.Services.Implementation
                 throw new Exception("Password reset failed");
 
             user.ResetPasswordOTP = null;
-            user.ResetPasswordOTPExpired = null;
+            user.ResetPasswordOTPExpiry = null;
             await _userManager.UpdateAsync(user);
         }
 

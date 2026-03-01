@@ -13,7 +13,7 @@ namespace e_commerce.core.entities
         public DateTime Expires { get; set; }
         public bool IsRevoked { get; set; }
 
-        public string UserId { get; set; } = string.Empty;
+        public int UserId { get; set; }
         public User User { get; set; }
     }
 }
