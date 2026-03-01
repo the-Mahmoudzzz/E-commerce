@@ -109,6 +109,8 @@ namespace e_commerce.api
            
             builder.Services.AddScoped<SendEmailService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
 
             var app = builder.Build();
 

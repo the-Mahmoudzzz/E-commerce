@@ -13,5 +13,11 @@ namespace Web.App.Intarfeces
         Task<AuthResponseDto> LoginAsync(LoginDTO dto);
         Task<AuthResponseDto> RefreshTokenAsync(string refreshToken);
         Task LogoutAsync(string refreshToken);
+        Task RegisterAsync(RegisterDTO dto, string baseUrl);
+  
+        Task ConfirmEmailAsync(string email, string code);
+        Task ForgotPasswordAsync(string email);
+        Task ResetPasswordAsync(string email, string otp, string newPassword);
+        Task DeleteAccountAsync(string userId);
     }
 }
