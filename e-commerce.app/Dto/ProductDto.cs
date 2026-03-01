@@ -9,7 +9,7 @@ namespace e_commerce.app.Dto
 {
     public class CreateProductBySellerDto
     {
-        [Required(ErrorMessage = "The name is required")]
+        [Required(ErrorMessage = "The Name is required")]
         public string Name { get; set; } = string.Empty;
 
 
