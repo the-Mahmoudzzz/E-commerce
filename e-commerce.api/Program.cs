@@ -2,6 +2,7 @@ using AutoMapper;
 using e_commerce.app.interfaces;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Mapping;
+using e_commerce.app.Services.ExternalService;
 using e_commerce.app.Services.Implementation;
 using e_commerce.app.Services.IServices;
 using e_commerce.app.servieses.impelmentaion;
@@ -91,6 +92,7 @@ namespace e_commerce.api
     });
             });
             builder.Services.AddScoped<IFeedbackService, FeedBackService>();
+
             builder.Services.AddScoped<IFeedBackRepo, FeedbackRepository>();
             builder.Services.AddAutoMapper(typeof(FeedbackProfile));
             builder.Services.AddAutoMapper(typeof(ProductReviewProfile));
@@ -101,6 +103,7 @@ namespace e_commerce.api
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
             builder.Services.AddAutoMapper(typeof(CategoryProfile));
+            builder.Services.AddScoped<SendEmailService>();
 
             var app = builder.Build();
 
