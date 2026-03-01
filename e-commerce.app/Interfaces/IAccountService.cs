@@ -9,11 +9,6 @@ namespace Web.App.Intarfeces
 {
     public interface IAccountService
     {
-        Task RegisterAsync(RegisterDTO dto, string baseUrl);
-        Task<string> LoginAsync(LoginDTO dto);
-        Task ConfirmEmailAsync(string email, string code);
-        Task ForgotPasswordAsync(string email);
-        Task ResetPasswordAsync(string email, string otp, string newPassword);
-        Task DeleteAccountAsync(string userId);
+
     }
 }
