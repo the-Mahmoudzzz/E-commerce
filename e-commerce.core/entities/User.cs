@@ -37,6 +37,8 @@ namespace e_commerce.core.entities
         public ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();
         public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
         public virtual SellerWallet? SellerWallet { get; set; }
+        public string? ResetPasswordOTP { get; set; }
+        public DateTime? ResetPasswordOTPExpired { get; set; }
 
 
     }

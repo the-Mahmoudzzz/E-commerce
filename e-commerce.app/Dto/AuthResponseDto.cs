@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using e_commerce.app.Dto;
 namespace e_commerce.app.Dto
 {
     public class AuthResponseDto
