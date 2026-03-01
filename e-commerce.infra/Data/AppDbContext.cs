@@ -33,6 +33,7 @@ namespace e_commerce.infra.Data
         public DbSet<UserAddresse> userAddresses { get; set; }
         public DbSet<Withdrawal> withdrawals { get; set; }
         public DbSet<Product> products { get; set; }
+        public DbSet<RefreshToken> refreshTokens { get; set; }
 
 
 
