@@ -9,7 +9,7 @@ namespace e_commerce.app.Dto
 {
     public class CreateProductBySellerDto
     {
-        [Required(ErrorMessage = "The name is required")]
+        [Required(ErrorMessage = "The Name is required")]
         public string Name { get; set; } = string.Empty;
 
 
@@ -19,7 +19,7 @@ namespace e_commerce.app.Dto
 
 
         [Required(ErrorMessage = "The price is required")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than zero")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must       be greater than zerooo")]
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "The imageUrl is required")]
