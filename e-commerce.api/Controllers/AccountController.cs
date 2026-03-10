@@ -8,12 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Web.App.DTOs;
-using Web.App.Services;
 
 namespace e_commerce.api.Controllers
 {
@@ -21,20 +17,11 @@ namespace e_commerce.api.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
-        private readonly GetTokenServices _getTokenService;
-        private readonly RoleManager<IdentityRole<int>> _roleManager;
-        private readonly GoogleTokenValidator _googleTokenValidator;
-        private readonly SendEmailService _emailService;
+
         private readonly IAuthService _authService;
 
-        public AccountController(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager, GetTokenServices getTokenService, GoogleTokenValidator googleTokenValidator, SendEmailService emailService, IAuthService authService)
-        {
-            _userManager = userManager;
-            _getTokenService = getTokenService;
-            _roleManager = roleManager;
-            _emailService = emailService;
-            _googleTokenValidator = googleTokenValidator;
+        public AccountController(IAuthService authService)
+        { 
             _authService = authService;
         }
 
@@ -81,32 +68,10 @@ namespace e_commerce.api.Controllers
         [HttpPost("google-login")]
         public async Task<IActionResult> GoogleLogin(GoogleLoginRequest request)
         {
-            var payload = await _googleTokenValidator.ValidateAsync(request.IdToken);
+            var Tokengoglelogin =await _authService.GogleLogin(request);
+            
 
-            var user = await _userManager.FindByEmailAsync(payload.Email);
-
-            if (user == null)
-            {
-                user = new User
-                {
-                    Email = payload.Email,
-                    UserName = payload.Email,
-                    EmailConfirmed = true
-                };
-
-                await _userManager.CreateAsync(user);
-
-                var loginInfo = new UserLoginInfo(
-                    "Google",
-                    payload.Subject,
-                    "Google");
-
-                await _userManager.AddLoginAsync(user, loginInfo);
-            }
-
-            var token = _getTokenService.GetToken(user);
-
-            return Ok(new { token });
+            return Ok(new { Tokengoglelogin });
         }
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh(string refreshToken)

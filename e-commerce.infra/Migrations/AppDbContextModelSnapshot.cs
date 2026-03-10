@@ -190,7 +190,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("ParentCategoryId");
 
-                    b.ToTable("categories");
+                    b.ToTable("categories", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Discount", b =>
@@ -229,7 +229,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Discounts");
+                    b.ToTable("Discounts", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.DiscountCategry", b =>
@@ -252,7 +252,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("DiscountId");
 
-                    b.ToTable("DiscountCategries");
+                    b.ToTable("DiscountCategries", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Feedback", b =>
@@ -280,7 +280,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Notification", b =>
@@ -312,7 +312,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("notifications");
+                    b.ToTable("notifications", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Order", b =>
@@ -348,7 +348,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("orders");
+                    b.ToTable("orders", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.OrderDetail", b =>
@@ -380,7 +380,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("orderDetails");
+                    b.ToTable("orderDetails", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Payment", b =>
@@ -412,7 +412,7 @@ namespace e_commerce.infra.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("payments");
+                    b.ToTable("payments", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Product", b =>
@@ -472,7 +472,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.ProductReview", b =>
@@ -508,7 +508,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductReviews");
+                    b.ToTable("ProductReviews", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.RefreshToken", b =>
@@ -536,7 +536,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("refreshTokens");
+                    b.ToTable("refreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.SellerWallet", b =>
@@ -564,7 +564,7 @@ namespace e_commerce.infra.Migrations
                     b.HasIndex("SellerId")
                         .IsUnique();
 
-                    b.ToTable("SellerWallets");
+                    b.ToTable("SellerWallets", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Shipment", b =>
@@ -596,7 +596,7 @@ namespace e_commerce.infra.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.ToTable("shipments");
+                    b.ToTable("shipments", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.ShippingZone", b =>
@@ -622,7 +622,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("shippingZones");
+                    b.ToTable("shippingZones", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.ShopingCart", b =>
@@ -644,7 +644,7 @@ namespace e_commerce.infra.Migrations
                     b.HasIndex("CustmerId")
                         .IsUnique();
 
-                    b.ToTable("shopingCarts");
+                    b.ToTable("shopingCarts", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.ShoppingCartItem", b =>
@@ -673,7 +673,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("ShoppingCartId");
 
-                    b.ToTable("shoppingCartItems");
+                    b.ToTable("shoppingCartItems", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.User", b =>
@@ -794,7 +794,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("userAddresses");
+                    b.ToTable("userAddresses", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Wishlist", b =>
@@ -820,7 +820,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Wishlists");
+                    b.ToTable("Wishlists", (string)null);
                 });
 
             modelBuilder.Entity("e_commerce.core.entities.Withdrawal", b =>
@@ -851,7 +851,7 @@ namespace e_commerce.infra.Migrations
 
                     b.HasIndex("SelerId");
 
-                    b.ToTable("withdrawals");
+                    b.ToTable("withdrawals", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

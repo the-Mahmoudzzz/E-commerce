@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Web.App.DTOs;
+using Web.App.Services;
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -21,16 +22,18 @@ namespace e_commerce.app.Services.Implementation
         private readonly IRefreshTokenRepository _refreshRepo;
         private readonly GetTokenServices _tokenService;
         private readonly SendEmailService _emailService;
+        private readonly GoogleTokenValidator _googleTokenValidator;
 
         public AuthService(
             UserManager<User> userManager,
             IRefreshTokenRepository refreshRepo,
-            GetTokenServices tokenService, SendEmailService emailService)
+            GetTokenServices tokenService, SendEmailService emailService, GoogleTokenValidator googleTokenValidator)
         {
             _userManager = userManager;
             _refreshRepo = refreshRepo;
             _tokenService = tokenService;
             _emailService = emailService;
+            _googleTokenValidator = googleTokenValidator;
         }
         public async Task RegisterAsync(RegisterDTO dto, string baseUrl)
         {
@@ -188,6 +191,50 @@ namespace e_commerce.app.Services.Implementation
 
             await _userManager.DeleteAsync(user);
         }
-    
-}
-}
+
+        public async Task<AuthResponseDto> GogleLogin(GoogleLoginRequest request)
+        {
+            var payload = await _googleTokenValidator.ValidateAsync(request.IdToken);
+            if(payload==null)
+            {
+                 throw new Exception("Invalid Google token");
+            }
+
+            var user = await _userManager.FindByEmailAsync(payload.Email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = payload.Email,
+                    UserName = payload.Email,
+                    EmailConfirmed = true
+                };
+
+                await _userManager.CreateAsync(user);
+
+                var loginInfo = new UserLoginInfo(
+                    "Google",
+                    payload.Subject,
+                    "Google");
+
+                await _userManager.AddLoginAsync(user, loginInfo);
+            }
+            var accessToken = _tokenService.GetToken(user);
+
+            var refreshToken = new RefreshToken
+            {
+                Token = GenerateRefreshToken(),
+                Expires = DateTime.UtcNow.AddDays(7),
+                UserId = user.Id,
+            };
+
+            await _refreshRepo.AddAsync(refreshToken);
+            return new AuthResponseDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken.Token
+            };
+        }
+    }
+}   
