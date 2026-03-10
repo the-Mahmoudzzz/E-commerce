@@ -1,9 +1,4 @@
 ﻿using e_commerce.app.Dto;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Web.App.DTOs;
 
 namespace e_commerce.app.Services.IServices
@@ -13,6 +8,7 @@ namespace e_commerce.app.Services.IServices
         Task RegisterAsync(RegisterDTO dto, string baseUrl);
         Task<AuthResponseDto> LoginAsync(LoginDTO dto);
         Task<AuthResponseDto> RefreshTokenAsync(string token);
+        Task<AuthResponseDto> GogleLogin(GoogleLoginRequest request);
         Task LogoutAsync(string token);
         Task ConfirmEmailAsync(string email, string code);
         Task ForgotPasswordAsync(string email);
