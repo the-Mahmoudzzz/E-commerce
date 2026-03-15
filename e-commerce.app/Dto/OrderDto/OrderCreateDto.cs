@@ -10,8 +10,11 @@ namespace e_commerce.app.Dto.OrderDto
     {
         public int CartId { get; set; }
 
-        public int USerAddressId { get; set; }
+        public int UserAddressId { get; set; }
+
         public int ShippingZoneId { get; set; }
+
+        public string? DiscountCode { get; set; }
 
     }
 }
