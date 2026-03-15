@@ -69,6 +69,12 @@ namespace e_commerce.infra.reposatory
                 .Where(p => p.SellerId == sellerId)
                 .ToListAsync();
         }
+        public async Task<IReadOnlyList<Product>> GetProductsByIdsAsync(IEnumerable<int> productIds)
+        {
+            return await _context.products
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync();
+        }
 
     }
 }
