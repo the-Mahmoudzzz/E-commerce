@@ -16,6 +16,7 @@ namespace e_commerce.app.interfaces
         Task UpdateAsync(Product product);
         Task DeleteAsync(int id);
         Task<IEnumerable<Product>> GetBySellerAsync(int sellerId);
+        Task<IReadOnlyList<Product>> GetProductsByIdsAsync(IEnumerable<int> productIds);
 
 
     }
