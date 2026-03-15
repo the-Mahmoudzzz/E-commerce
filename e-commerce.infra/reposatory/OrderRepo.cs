@@ -23,14 +23,7 @@ namespace e_commerce.infra.reposatory
             await _context.SaveChangesAsync();
            
         }
-        public async Task<IReadOnlyList<Order>> GetOrdersForUserAsync(int customerId)
-        {
-            return await _context.orders
-                .Include(o => o.OrderDetails)
-                .Where(o => o.CustomerId == customerId)
-                .OrderByDescending(o => o.CreatedAt) 
-                .ToListAsync();
-        }
+       
         public async Task<Order> GetOrderById(int orderId)
 
            => await _context.orders.Include(o => o.OrderDetails).
@@ -39,9 +32,14 @@ namespace e_commerce.infra.reposatory
             Include(s=>s.Shipment) 
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
-        Task<Order> IOrderRepo.GetOrdersForUserAsync(int customerId)
+        public async Task<IReadOnlyList<Order>> GetOrderByUser(int Customerid)
         {
-            throw new NotImplementedException();
+            return await _context.orders
+           .Include(o => o.OrderDetails)
+           .Where(o => o.CustomerId == Customerid)
+           .OrderByDescending(o => o.CreatedAt) 
+           .ToListAsync();
+
         }
     }
 }

@@ -12,6 +12,6 @@ namespace e_commerce.app.Interfaces
         Task CreateOrderAsync( Order orderCreateDto);
         Task<Order> GetOrderById(int orderId);
 
-        Task<Order> GetOrdersForUserAsync(int customerId);
+       Task<IReadOnlyList<Order>> GetOrderByUser(int Customerid);
     }
 }
