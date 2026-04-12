@@ -112,18 +112,19 @@ namespace e_commerce.api
             builder.Services.AddScoped<SendEmailService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
             builder.Services.AddScoped<IShoppingServiece, ShoppingServiece>();
-<<<<<<< MahmoudMostafa
+
             builder.Services.AddScoped<IShipmentRepo, ShipmentRepo>();
             builder.Services.AddScoped<IShipmentService, ShipmentService>();
 
             builder.Services.AddAutoMapper(typeof(ShipmentProfile));
-=======
+
             builder.Services.AddScoped<IOrderRepo, OrderRepo>();
             builder.Services.AddScoped<IShippingZoneRepo, ShippingZoneRepo>();
             builder.Services.AddScoped<IDiscountRepo, DiscountRepo>();
             builder.Services.AddScoped<IOrderService, OrderServiece>();
->>>>>>> main
+
 
 
             var app = builder.Build();
