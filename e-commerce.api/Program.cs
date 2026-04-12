@@ -113,6 +113,19 @@ namespace e_commerce.api
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
+            builder.Services.AddScoped<IShoppingServiece, ShoppingServiece>();
+
+            builder.Services.AddScoped<IShipmentRepo, ShipmentRepo>();
+            builder.Services.AddScoped<IShipmentService, ShipmentService>();
+
+            builder.Services.AddAutoMapper(typeof(ShipmentProfile));
+
+            builder.Services.AddScoped<IOrderRepo, OrderRepo>();
+            builder.Services.AddScoped<IShippingZoneRepo, ShippingZoneRepo>();
+            builder.Services.AddScoped<IDiscountRepo, DiscountRepo>();
+            builder.Services.AddScoped<IOrderService, OrderServiece>();
+
+
 
             var app = builder.Build();
 

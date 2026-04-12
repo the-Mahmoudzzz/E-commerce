@@ -1,4 +1,5 @@
-﻿using System;
+﻿using e_commerce.core.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -12,11 +13,14 @@ namespace e_commerce.core.entities
         public int Id { get; set; }
         public string CourierName { get; set; }
         public int TrackingNumber { get; set; }
+        public ShipmentStatus Status { get; set; } = ShipmentStatus.Preparing;
         public DateTime ShippedDate{get;set;}
         public DateTime DelevierdDate{get;set;}
 
         public int OrderId { get; set; }
         [ForeignKey("OrderId")]
         public Order order { get; set; }
+        public int? ShippingZoneId { get; set; }
+        public ShippingZone? ShippingZone { get; set; }
     }
 }
