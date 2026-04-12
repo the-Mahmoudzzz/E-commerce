@@ -27,6 +27,7 @@ namespace e_commerce.app.Dto.OrderDto
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal FinalAmount { get; set; }
+        public List<OrderItemDto> OrderDetails { get; set; } = new List<OrderItemDto>();
 
 
     }

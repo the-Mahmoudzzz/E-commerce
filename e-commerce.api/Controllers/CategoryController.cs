@@ -1,6 +1,7 @@
 ﻿using e_commerce.app.Dto.CtegoriesDto;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;

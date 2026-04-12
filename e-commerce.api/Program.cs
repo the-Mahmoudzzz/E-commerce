@@ -97,12 +97,14 @@ namespace e_commerce.api
             builder.Services.AddScoped<IFeedBackRepo, FeedbackRepository>();
             builder.Services.AddAutoMapper(typeof(FeedbackProfile));
             builder.Services.AddAutoMapper(typeof(ProductReviewProfile));
+            builder.Services.AddAutoMapper(typeof(ShoppingCartProfile));
             builder.Services.AddScoped<IReviewProductRepo, ReviewProductRepo>();
             builder.Services.AddScoped<IReviewProductService, ProductReviewService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
+            builder.Services.AddScoped<IShoppingCartRepo, ShoppingCartRepo>();
             builder.Services.AddAutoMapper(typeof(CategoryProfile));
             builder.Services.AddScoped<GetTokenServices>();
             builder.Services.AddScoped<GoogleTokenValidator>();
@@ -110,12 +112,7 @@ namespace e_commerce.api
             builder.Services.AddScoped<SendEmailService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-            
-            
 
-
-            builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
-            builder.Services.AddScoped<IUserAddressService, UserAddressService>();
 
             var app = builder.Build();
 

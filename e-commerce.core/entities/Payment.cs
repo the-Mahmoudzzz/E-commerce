@@ -23,7 +23,11 @@ namespace e_commerce.core.entities
         public string PaymentMethod { get; set; } = string.Empty;
 
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
+        //[Column(TypeName = "decimal(18,2)")]
+        //public decimal Amount { get; set; }
+        //public string? ProviderResponse { get; set; } 
 
+        //public string? ErrorMessage { get; set; }
         public string? TransactionReference { get; set; }
 
         public DateTime? PaidAt { get; set; }
