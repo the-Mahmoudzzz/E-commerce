@@ -51,6 +51,7 @@ namespace e_commerce.app.Services.Implementation
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new Exception("User not authenticated");
 
+
             int userId = int.Parse(userIdClaim);
             // 1. نجيب السلة بالمنتجات بتاعتها
             // (بفترض إنك عامل ميثود GetCartAsync في الـ IShoppingCartRepo)
@@ -60,6 +61,7 @@ namespace e_commerce.app.Services.Implementation
 
             // 2. نحسب الإجمالي بتاع المنتجات
             decimal totalPrice = cart.Items.Sum(item => item.Price * item.Quantity);
+            Console.WriteLine(totalPrice);
 
             // 3. نحسب تكلفة الشحن من جدول الـ ShippingZones
             var zone = await _shippingService.GetZoneAsync(orderDto.ShippingZoneId);

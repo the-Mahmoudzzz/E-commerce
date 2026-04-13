@@ -14,7 +14,17 @@ namespace e_commerce.app.Mapping
         public ShoppingCartProfile()
         {
             CreateMap<ShopingCart, ShoppingCartDto>();
-            CreateMap<ShoppingCartItem, ShoppingCartItemDto>();
+
+            // التعديل السحري هنا: بنفهم AutoMapper يجيب الداتا منين بالظبط
+            CreateMap<ShoppingCartItem, ShoppingCartItemDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+                // استخدم السطر ده لو عايز السعر دايماً يكون متحدث (Live Price)
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                // أو لو كنت عايز تستخدم PriceAtTime، امسح السطر اللي فوق واستخدم ده:
+                // .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.PriceAtTime))
+
+                // بونص: لو الـ Product جواه مسار الصورة، هتحتاج تعملها مابينج هي كمان كدا
+                .ForMember(dest => dest.PictureUrl, opt => opt.MapFrom(src => src.Product.ImageUrl));
 
             CreateMap<ShoppingCartDto, ShopingCart>();
             CreateMap<ShoppingCartItemDto, ShoppingCartItem>();
