@@ -122,8 +122,12 @@ namespace e_commerce.api
 
             builder.Services.AddScoped<IOrderRepo, OrderRepo>();
             builder.Services.AddScoped<IShippingZoneRepo, ShippingZoneRepo>();
+            builder.Services.AddScoped<IShippingService, ShippingService>();
             builder.Services.AddScoped<IDiscountRepo, DiscountRepo>();
             builder.Services.AddScoped<IOrderService, OrderServiece>();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            builder.Services.AddScoped<IDiscountService, DiscountService>();
 
 
 
