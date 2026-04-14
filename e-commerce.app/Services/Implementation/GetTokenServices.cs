@@ -26,6 +26,7 @@ namespace e_commerce.app.Services.Implementation
             var claims = new List<Claim> {
             new Claim(JwtRegisteredClaimNames.Name,user.UserName),
             new Claim(JwtRegisteredClaimNames.Email,user.Email),
+            new Claim (JwtRegisteredClaimNames.NameId,user.Id.ToString()),
 
             };
             var creds = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha512Signature);

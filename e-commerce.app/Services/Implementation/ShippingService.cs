@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
-using e_commerce.app.Dto;
+using e_commerce.app.Dto.ZondeDTO;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using Microsoft.AspNetCore.Mvc;
 
 public class ShippingService : IShippingService
 {
@@ -44,17 +45,20 @@ public class ShippingService : IShippingService
     }
 
     // ✏️ Update
-    public async Task UpdateZoneAsync(ShippingZoneDto zoneDto)
+    public async Task UpdateZoneAsync( int id,UpdateZoneDto? zoneDto)
     {
-        var existingZone = await _repo.GetByIdAsync(zoneDto.Id);
+        var existingZone = await _repo.GetByIdAsync(id);
 
         if (existingZone == null)
             throw new Exception("Shipping zone not found");
 
         // update values
+        if(zoneDto.CityName!=null)
         existingZone.CityName = zoneDto.CityName;
-        existingZone.ShipingCost = zoneDto.ShippingCost;
-        existingZone.EstimatedDays = zoneDto.EstimatedDays;
+        if(zoneDto.ShippingCost!=null)
+        existingZone.ShipingCost = (decimal)zoneDto.ShippingCost;
+        if(zoneDto.EstimatedDays!=null)
+        existingZone.EstimatedDays = (int)zoneDto.EstimatedDays;
 
         await _repo.UpdateAsync(existingZone);
     }

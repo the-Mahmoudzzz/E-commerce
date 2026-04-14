@@ -140,6 +140,7 @@ namespace e_commerce.api
                 app.UseSwaggerUI();
             }
 
+
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
