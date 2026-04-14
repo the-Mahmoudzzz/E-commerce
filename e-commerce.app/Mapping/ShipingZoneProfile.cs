@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using e_commerce.app.Dto;
+using e_commerce.app.Dto.ZondeDTO;
 using e_commerce.core.entities;
 
 public class ShipingZoneProfile : Profile

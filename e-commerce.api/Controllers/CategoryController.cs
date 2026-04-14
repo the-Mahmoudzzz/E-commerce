@@ -61,23 +61,23 @@ namespace e_commerce.api.Controllers
             return Created();
         }
         [HttpPut]
-        public IActionResult Edit(CreateCategoryDto createCategoryDto) {
+        public async Task<IActionResult> Edit(CreateCategoryDto createCategoryDto) {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var updated= categoryService.UpdateAsync(createCategoryDto);
+            var updated=await categoryService.UpdateAsync(createCategoryDto);
             return Ok(updated);
 
         }
         [HttpPut("sub")]
-        public IActionResult EditSub(CreateSubCategoryDto createCategoryDto)
+        public async Task<IActionResult> EditSub(CreateSubCategoryDto createCategoryDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var updated = categoryService.UpdateSubCategoryAsync(createCategoryDto);
+            var updated =await categoryService.UpdateSubCategoryAsync(createCategoryDto);
             return Ok(updated);
 
         }

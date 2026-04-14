@@ -1,4 +1,4 @@
-﻿using e_commerce.app.Dto;
+﻿using e_commerce.app.Dto.ZondeDTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace e_commerce.app.Services.IServices
         Task<ShippingZoneDto> GetZoneAsync(int id);
         Task<IReadOnlyList<ShippingZoneDto>> GetAllZonesAsync();
         Task AddZoneAsync(ShippingZoneDto zoneDto);
-        Task UpdateZoneAsync(ShippingZoneDto zoneDto);
+        Task UpdateZoneAsync( int id,UpdateZoneDto? zoneDto);
         Task DeleteZoneAsync(int id);
     }
 }

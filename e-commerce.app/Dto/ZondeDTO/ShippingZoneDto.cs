@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace e_commerce.app.Dto
+namespace e_commerce.app.Dto.ZondeDTO
 {
     public class ShippingZoneDto
     {
