@@ -27,7 +27,7 @@ namespace e_commerce.core.entities
         [ForeignKey("SellerId")]
         public User Seller { get; set; } = null!;
 
-        public int? CreatedByAdminId { get; set; }
+
 
         public int ?CreatedByAdminId { get; set; }
 
