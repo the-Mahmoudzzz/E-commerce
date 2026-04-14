@@ -43,7 +43,7 @@ namespace e_commerce.api.Controllers
 
         
         [HttpPost]
-        [Authorize] 
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] DiscountDto dto)
         {
             await _discountService.AddAsync(dto);

@@ -130,6 +130,12 @@ namespace e_commerce.api
             builder.Services.AddScoped<IDiscountService, DiscountService>();
 
 
+            builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
+            builder.Services.AddScoped<IWishlistService, WishlistService>();
+
+
+            builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
+            builder.Services.AddScoped<IUserAddressService, UserAddressService>();
 
             var app = builder.Build();
 

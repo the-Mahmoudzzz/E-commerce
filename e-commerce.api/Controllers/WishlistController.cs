@@ -25,14 +25,25 @@ namespace e_commerce.api.Controllers
             return Ok(items);
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> Add(AddToWishlistDto dto)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest();
+
+        //    await wishlistService.AddToWishlistAsync(dto);
+        //    return Created();
+        //}
+
         [HttpPost]
         public async Task<IActionResult> Add(AddToWishlistDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest(ModelState);
 
             await wishlistService.AddToWishlistAsync(dto);
-            return Created();
+
+            return Ok(new { message = "Product added to wishlist successfully", data = dto });
         }
 
         [HttpDelete]
