@@ -57,6 +57,7 @@ namespace e_commerce.app.Services.Implementation
             var cart = await _shoppingServiece.GetCartAsync(orderDto.CartId);
             if (cart == null || !cart.Items.Any())
                 throw new Exception("السلة فاضية أو غير موجودة");
+            
 
             // 2. نحسب الإجمالي بتاع المنتجات
             decimal totalPrice = cart.Items.Sum(item => item.Price * item.Quantity);
