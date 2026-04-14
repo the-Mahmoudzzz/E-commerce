@@ -8,12 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Dto\WishlistDto\**" />
-	  <EmbeddedResource Remove="Dto\WishlistDto\**" />
-	  <None Remove="Dto\WishlistDto\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\e-commerce.core\e-commerce.core.csproj" />
 	</ItemGroup>
 
