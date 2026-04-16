@@ -9,7 +9,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development 
       - ASPNETCORE_HTTP_PORTS=8080           
-      - ConnectionStrings__cs=Server=ecommerce-db;Database=MyDb;User=sa;Password=YourPassword123;TrustServerCertificate=True
+      - ConnectionStrings__cs=Server=ecommerce-db;Database=MyDb;User=sa;Password=Diab1234567;TrustServerCertificate=True
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: ecommerce-db
