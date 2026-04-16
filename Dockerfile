@@ -3,7 +3,7 @@ WORKDIR /app
 
 COPY . .
 RUN dotnet restore
-RUN dotnet publish -c Release -o out
+RUN dotnet publish e-commerce.api/e-commerce.api.csproj -c Release -o out
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app

@@ -29,8 +29,6 @@ namespace e_commerce.core.entities
 
         public int? CreatedByAdminId { get; set; }
 
-        public int ?CreatedByAdminId { get; set; }
-
         [ForeignKey("CreatedByAdminId")]
         public User? CreatedByAdmin { get; set; } = null!;
         public int? ApprovedByAdminId { get; set; }
