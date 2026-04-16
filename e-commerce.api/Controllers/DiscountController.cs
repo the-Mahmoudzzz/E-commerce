@@ -16,7 +16,7 @@ namespace e_commerce.api.Controllers
             _discountService = discountService;
         }
 
-        // 🔍 Get All Discounts
+ 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -24,7 +24,7 @@ namespace e_commerce.api.Controllers
             return Ok(discounts);
         }
 
-        // 🔍 Get Discount By Id
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -32,7 +32,6 @@ namespace e_commerce.api.Controllers
             return Ok(discount);
         }
 
-        // 🎯 Apply Discount (دي اللي هتستخدم في Order)
         [HttpPost("apply")]
         public async Task<IActionResult> ApplyDiscount([FromBody] ApplyDiscountDto dto)
         {
@@ -42,16 +41,16 @@ namespace e_commerce.api.Controllers
             return Ok(discount);
         }
 
-        // ➕ Add Discount (Admin)
+        
         [HttpPost]
-        [Authorize] // ممكن تزود Role بعدين
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] DiscountDto dto)
         {
             await _discountService.AddAsync(dto);
             return Ok("Discount created successfully");
         }
 
-        // ✏️ Update Discount
+    
         [HttpPut]
         [Authorize]
         public async Task<IActionResult> Update([FromBody] DiscountDto dto)
@@ -60,7 +59,7 @@ namespace e_commerce.api.Controllers
             return Ok("Discount updated successfully");
         }
 
-        // ❌ Delete (Soft Delete)
+      
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> Delete(int id)
