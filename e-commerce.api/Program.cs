@@ -1,4 +1,5 @@
 using AutoMapper;
+using e_commerce.app.External;
 using e_commerce.app.interfaces;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Mapping;
@@ -128,6 +129,12 @@ namespace e_commerce.api
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddScoped<IDiscountService, DiscountService>();
+            builder.Services.AddScoped<INotifiRepo, NotitfiRepo>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+
+            builder.Services.AddAutoMapper(typeof(NotificationProfile));
+
+            builder.Services.AddSignalR();
 
 
 
@@ -145,7 +152,7 @@ namespace e_commerce.api
             app.UseAuthentication();
             app.UseAuthorization();
 
-
+            app.MapHub<NotificationHub>("/notificationHub");
             app.MapControllers();
 
             app.Run();
