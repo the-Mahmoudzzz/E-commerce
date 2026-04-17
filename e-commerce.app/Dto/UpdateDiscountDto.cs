@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace e_commerce.app.Dto
 {
-    public class DiscountDto
+    internal class UpdateDiscountDto
     {
     }
 }

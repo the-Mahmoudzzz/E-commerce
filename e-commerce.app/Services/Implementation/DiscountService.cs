@@ -16,7 +16,7 @@ public class DiscountService : IDiscountService
     }
 
     // 🔥 أهم ميثود (اللي هتستخدم في Order)
-    public async Task<DiscountDto> ApplyDiscountAsync(string code, decimal orderTotal)
+    public async Task<CreateDiscountDto> ApplyDiscountAsync(string code, decimal orderTotal)
     {
         var discount = await _repo.GetActiveDiscountByCodeAsync(code);
 
@@ -27,29 +27,29 @@ public class DiscountService : IDiscountService
         if (orderTotal < discount.MinOrderAmount)
             throw new Exception("Minimum order amount not reached");
 
-        return _mapper.Map<DiscountDto>(discount);
+        return _mapper.Map<CreateDiscountDto>(discount);
     }
 
     // 📋 Get All
-    public async Task<IReadOnlyList<DiscountDto>> GetAllAsync()
+    public async Task<IReadOnlyList<CreateDiscountDto>> GetAllAsync()
     {
         var discounts = await _repo.GetAllAsync();
-        return _mapper.Map<IReadOnlyList<DiscountDto>>(discounts);
+        return _mapper.Map<IReadOnlyList<CreateDiscountDto>>(discounts);
     }
 
     // 🔍 Get By Id
-    public async Task<DiscountDto> GetByIdAsync(int id)
+    public async Task<CreateDiscountDto> GetByIdAsync(int id)
     {
         var discount = await _repo.GetByIdAsync(id);
 
         if (discount == null)
             throw new Exception("Discount not found");
 
-        return _mapper.Map<DiscountDto>(discount);
+        return _mapper.Map<CreateDiscountDto>(discount);
     }
 
     // ➕ Add
-    public async Task AddAsync(DiscountDto dto)
+    public async Task AddAsync(CreateDiscountDto dto)
     {
         var discount = _mapper.Map<Discount>(dto);
         discount.IsActive = true;
@@ -58,7 +58,7 @@ public class DiscountService : IDiscountService
     }
 
     // ✏️ Update
-    public async Task UpdateAsync(DiscountDto dto)
+    public async Task UpdateAsync(CreateDiscountDto dto)
     {
         var existing = await _repo.GetByIdAsync(dto.Id);
 
