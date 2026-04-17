@@ -44,7 +44,7 @@ namespace e_commerce.api.Controllers
         
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Create([FromBody] DiscountDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateDiscountDto dto)
         {
             await _discountService.AddAsync(dto);
             return Ok("Discount created successfully");
@@ -53,7 +53,7 @@ namespace e_commerce.api.Controllers
     
         [HttpPut]
         [Authorize]
-        public async Task<IActionResult> Update([FromBody] DiscountDto dto)
+        public async Task<IActionResult> Update([FromBody] CreateDiscountDto dto)
         {
             await _discountService.UpdateAsync(dto);
             return Ok("Discount updated successfully");
