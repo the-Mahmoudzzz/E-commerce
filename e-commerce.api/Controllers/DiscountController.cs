@@ -16,7 +16,6 @@ namespace e_commerce.api.Controllers
             _discountService = discountService;
         }
 
- 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -24,7 +23,6 @@ namespace e_commerce.api.Controllers
             return Ok(discounts);
         }
 
-        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -35,37 +33,31 @@ namespace e_commerce.api.Controllers
         [HttpPost("apply")]
         public async Task<IActionResult> ApplyDiscount([FromBody] ApplyDiscountDto dto)
         {
-            var discount = await _discountService
-                .ApplyDiscountAsync(dto.Code, dto.OrderTotal);
-
-            return Ok(discount);
+            var result = await _discountService.ApplyDiscountAsync(dto.Code, dto.OrderTotal);
+            return Ok(result);
         }
 
-        
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateDiscountDto dto)
         {
             await _discountService.AddAsync(dto);
-            return Ok("Discount created successfully");
+            return Ok("Created");
         }
 
-    
         [HttpPut]
         [Authorize]
-        public async Task<IActionResult> Update([FromBody] CreateDiscountDto dto)
+        public async Task<IActionResult> Update([FromBody] UpdateDiscountDto dto)
         {
             await _discountService.UpdateAsync(dto);
-            return Ok("Discount updated successfully");
+            return Ok("Updated");
         }
 
-      
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             await _discountService.DeleteAsync(id);
-            return Ok("Discount deleted successfully");
+            return Ok("Deleted");
         }
     }
 }

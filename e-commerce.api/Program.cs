@@ -131,6 +131,11 @@ namespace e_commerce.api
             builder.Services.AddScoped<IDiscountService, DiscountService>();
             builder.Services.AddScoped<INotifiRepo, NotitfiRepo>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IPaymobService, PaymobService>();
+
+            builder.Services.AddHttpClient<IPaymobService, PaymobService>();
 
             builder.Services.AddAutoMapper(typeof(NotificationProfile));
 

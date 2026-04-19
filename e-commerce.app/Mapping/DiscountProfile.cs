@@ -6,7 +6,9 @@ public class DiscountProfile : Profile
 {
     public DiscountProfile()
     {
-        
-        CreateMap<Discount, DiscountDto>().ReverseMap();
+
+        CreateMap<CreateDiscountDto, Discount>();
+        CreateMap<UpdateDiscountDto, Discount>();
+        CreateMap<Discount, DiscountDto>();
     }
 }

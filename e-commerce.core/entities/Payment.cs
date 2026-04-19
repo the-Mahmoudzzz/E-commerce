@@ -1,15 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using e_commerce.core.Enum;
 namespace e_commerce.core.entities
 {
-    public enum PaymentStatus
-    {
-        Pending,
-        Approved,
-        Refused,
-        Refunded
-    }
+
 
     public class Payment
     {
@@ -19,12 +13,11 @@ namespace e_commerce.core.entities
         [ForeignKey("OrderId")]
         public virtual Order Order { get; set; } = null!;
 
-
-        public string PaymentMethod { get; set; } = string.Empty;
+        public PaymentMethod PaymentMethod { get; set; }
 
         public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
-        //[Column(TypeName = "decimal(18,2)")]
-        //public decimal Amount { get; set; }
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Amount { get; set; }
         //public string? ProviderResponse { get; set; } 
 
         //public string? ErrorMessage { get; set; }

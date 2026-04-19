@@ -9,11 +9,11 @@ namespace e_commerce.app.Services.IServices
 {
     public interface IDiscountService
     {
-        Task<CreateDiscountDto> ApplyDiscountAsync(string code, decimal orderTotal);
-        Task<IReadOnlyList<CreateDiscountDto>> GetAllAsync();
-        Task<CreateDiscountDto> GetByIdAsync(int id);
+        Task<DiscountDto> ApplyDiscountAsync(string code, decimal orderTotal);
+        Task<IReadOnlyList<DiscountDto>> GetAllAsync();
+        Task<DiscountDto> GetByIdAsync(int id);
         Task AddAsync(CreateDiscountDto dto);
-        Task UpdateAsync(CreateDiscountDto dto);
+        Task UpdateAsync(UpdateDiscountDto dto);
         Task DeleteAsync(int id);
     }
 }
