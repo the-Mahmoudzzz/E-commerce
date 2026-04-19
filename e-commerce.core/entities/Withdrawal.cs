@@ -10,10 +10,9 @@ namespace e_commerce.core.entities
     public enum WithdrawlsStatus
     {
         Pending,
-        Processing,
-        Shipped,
-        Canceled,
-        Refused
+        Approved,
+        Rejected,
+        Paid
     }
 
     public class Withdrawal
