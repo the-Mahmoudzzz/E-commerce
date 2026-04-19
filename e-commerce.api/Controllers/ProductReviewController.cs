@@ -61,8 +61,11 @@ namespace e_commerce.api.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = _reviewProductService.UpdateAsync(reviewId, productReview);
-                return Ok(result);
+                
+                await _reviewProductService.UpdateAsync(reviewId, productReview);
+
+              
+                return Ok(new { message = "Review updated successfully and pending approval" });
             }
             return BadRequest();
         }
