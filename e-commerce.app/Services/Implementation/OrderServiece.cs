@@ -21,7 +21,6 @@ namespace e_commerce.app.Services.Implementation
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IShippingService _shippingService;
         private readonly IDiscountService _discountService;
-        private readonly INotificationService _notificationService;
 
 
 
@@ -33,8 +32,7 @@ namespace e_commerce.app.Services.Implementation
                 IHttpContextAccessor httpContextAccessor
 ,
                 IShippingService shippingService,
-                IDiscountService discountService,
-                INotificationService notificationService)
+                IDiscountService discountService)
         {
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
@@ -43,7 +41,6 @@ namespace e_commerce.app.Services.Implementation
             _httpContextAccessor = httpContextAccessor;
             _shippingService = shippingService;
             this._discountService = discountService;
-            _notificationService = notificationService;
         }
 
         public async Task CreateOrder(OrderCreateDto orderDto)
@@ -111,17 +108,9 @@ namespace e_commerce.app.Services.Implementation
                 OrderDetails = orderDetails
             };
 
-            
-
             // 8. نحفظ الأوردر في الداتا بيز (الريبو بتاعك بيعمل SaveChanges جواه فمش محتاجين نعملها هنا)
             await _orderRepo.CreateOrderAsync(order);
-            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto
-            {
-                Message = $"Your oreder  {order.Id} is Confiremed",
-                UserId = userId,
-                Title = "Order Is Confiermed"
-            }
-            );
+
             // 9. نمسح السلة عشان العميل ميطلبهاش تاني بالغلط
             await _cartRepo.DeleteCartAsync(cart.Id);
         }
