@@ -39,6 +39,7 @@ namespace e_commerce.core.entities
         public virtual SellerWallet? SellerWallet { get; set; }
         public string? ResetPasswordOTP { get; set; }
         public DateTime? ResetPasswordOTPExpiry { get; set; }
+        public bool IsApproved { get; set; }= false;
 
 
     }

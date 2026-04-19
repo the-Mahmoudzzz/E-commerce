@@ -40,13 +40,9 @@ namespace e_commerce.app.Services.Implementation
             _googleTokenValidator = googleTokenValidator;
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Register
-        // ══════════════════════════════════════════════════════════════════
         public async Task RegisterAsync(RegisterDTO dto, string baseUrl)
         {
-            // 1. تأكد الـ role صح قبل ما تعمل أي حاجة
-            
+         
 
             var user = new User
             {
@@ -55,19 +51,25 @@ namespace e_commerce.app.Services.Implementation
                 PhoneNumber = dto.PhoneNumber
             };
 
-            var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
-                throw new Exception(result.Errors.First().Description);
-
-            // FIX 1: حط الـ role بعد الـ create مباشرة
-            if (dto.UserRole !=  UserRole.User &&
-              dto.UserRole != UserRole.Seller)
+            if (dto.UserRole != UserRole.User &&
+             dto.UserRole != UserRole.Seller)
             {
                 throw new Exception("Invalid Role");
             }
 
+            var result = await _userManager.CreateAsync(user, dto.Password);
+            if (!result.Succeeded)
+                throw new Exception(result.Errors.First().Description);
+
+           
+            if (dto.UserRole == UserRole.User)
+            {
+                user.IsApproved = true;
+            }
+
             await _userManager.AddToRoleAsync(user, dto.UserRole.ToString());
-            await _userManager.AddToRoleAsync(user,dto.UserRole.ToString() );
+
+           
 
             // ابعت email تأكيد
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -80,20 +82,20 @@ namespace e_commerce.app.Services.Implementation
                 $"Click <a href='{link}'>here</a> to confirm your email.");
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Login
-        // ══════════════════════════════════════════════════════════════════
         public async Task<AuthResponseDto> LoginAsync(LoginDTO dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
             // FIX 2a: user مش موجود
-            if (user is null)
+            if (user is null )
                 throw new UnauthorizedAccessException("Invalid credentials.");
 
             // FIX 2b: email مش مأكد
             if (!user.EmailConfirmed)
                 throw new Exception("Please confirm your email before logging in.");
+
+            if (!user.IsApproved)
+                throw new Exception("Please Waiting to confirm your Account.");
 
             // FIX 2c: الحساب محظور من الـ Admin
             if (await _userManager.IsLockedOutAsync(user))
@@ -106,9 +108,6 @@ namespace e_commerce.app.Services.Implementation
             return await BuildAuthResponseAsync(user);
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Google Login
-        // ══════════════════════════════════════════════════════════════════
         public async Task<AuthResponseDto> GogleLogin(GoogleLoginRequest request)
         {
             var payload = await _googleTokenValidator.ValidateAsync(request.IdToken);
@@ -124,7 +123,9 @@ namespace e_commerce.app.Services.Implementation
                 {
                     Email = payload.Email,
                     UserName = payload.Email,
-                    EmailConfirmed = true  // Google بيأكد الـ email
+                    EmailConfirmed = true ,
+                   IsApproved = true 
+                    
                 };
 
                 var result = await _userManager.CreateAsync(user);
@@ -148,9 +149,6 @@ namespace e_commerce.app.Services.Implementation
             return await BuildAuthResponseAsync(user);
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Refresh Token
-        // ══════════════════════════════════════════════════════════════════
         public async Task<AuthResponseDto> RefreshTokenAsync(string token)
         {
             var storedToken = await _refreshRepo.GetByTokenAsync(token);
@@ -182,9 +180,6 @@ namespace e_commerce.app.Services.Implementation
             };
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Logout
-        // ══════════════════════════════════════════════════════════════════
         public async Task LogoutAsync(string token)
         {
             var storedToken = await _refreshRepo.GetByTokenAsync(token);
@@ -192,9 +187,6 @@ namespace e_commerce.app.Services.Implementation
                 await _refreshRepo.RevokeAsync(storedToken);
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Email Confirmation
-        // ══════════════════════════════════════════════════════════════════
         public async Task ConfirmEmailAsync(string email, string code)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -208,13 +200,10 @@ namespace e_commerce.app.Services.Implementation
                 throw new Exception("Email confirmation failed.");
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Forgot / Reset Password
-        // ══════════════════════════════════════════════════════════════════
         public async Task ForgotPasswordAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) return; // لا تكشف إن الـ email مش موجود
+            if (user is null) return; 
 
             var otp = new Random().Next(100000, 999999).ToString();
             user.ResetPasswordOTP = otp;
@@ -244,15 +233,12 @@ namespace e_commerce.app.Services.Implementation
             if (!result.Succeeded)
                 throw new Exception("Password reset failed.");
 
-            // امسح الـ OTP بعد الاستخدام
+           
             user.ResetPasswordOTP = null;
             user.ResetPasswordOTPExpiry = null;
             await _userManager.UpdateAsync(user);
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Delete Account
-        // ══════════════════════════════════════════════════════════════════
         public async Task DeleteAccountAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -262,11 +248,7 @@ namespace e_commerce.app.Services.Implementation
             await _userManager.DeleteAsync(user);
         }
 
-        // ══════════════════════════════════════════════════════════════════
-        // Private Helpers
-        // ══════════════════════════════════════════════════════════════════
-
-        // DRY: بناء الـ AuthResponse في مكان واحد بدل تكرار الكود
+        
         private async Task<AuthResponseDto> BuildAuthResponseAsync(User user)
         {
             var accessToken = _tokenService.GetToken(user);
