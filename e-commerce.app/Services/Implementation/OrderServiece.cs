@@ -21,6 +21,7 @@ namespace e_commerce.app.Services.Implementation
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IShippingService _shippingService;
         private readonly IDiscountService _discountService;
+        private readonly INotificationService _notificationService;
 
 
 
@@ -32,7 +33,8 @@ namespace e_commerce.app.Services.Implementation
                 IHttpContextAccessor httpContextAccessor
 ,
                 IShippingService shippingService,
-                IDiscountService discountService)
+                IDiscountService discountService,
+                INotificationService notificationService)
         {
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
@@ -41,6 +43,7 @@ namespace e_commerce.app.Services.Implementation
             _httpContextAccessor = httpContextAccessor;
             _shippingService = shippingService;
             this._discountService = discountService;
+            _notificationService = notificationService;
         }
 
         public async Task CreateOrder(OrderCreateDto orderDto)
@@ -107,6 +110,13 @@ namespace e_commerce.app.Services.Implementation
                 CreatedAt = DateTime.UtcNow,
                 OrderDetails = orderDetails
             };
+
+            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto {
+                Message="Order is Created sacsessfully",
+                UserId=userId,
+                Title="Order Created"
+            }
+            );
 
             // 8. نحفظ الأوردر في الداتا بيز (الريبو بتاعك بيعمل SaveChanges جواه فمش محتاجين نعملها هنا)
             await _orderRepo.CreateOrderAsync(order);
