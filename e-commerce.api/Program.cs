@@ -148,6 +148,11 @@ namespace e_commerce.api
 
             builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
             builder.Services.AddScoped<IUserAddressService, UserAddressService>();
+            builder.Services.AddScoped<IWithdrawalRepository, WithdrawalRepository>();
+            builder.Services.AddScoped<IWithdrawalService, WithdrawalService>();
+            builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
+            builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
+            builder.Services.AddScoped<ISellerWalletService, SellerWalletService>();
 
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
