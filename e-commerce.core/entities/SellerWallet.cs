@@ -14,8 +14,9 @@ namespace e_commerce.core.entities
         [ForeignKey("SellerId")]
         public virtual User Seller { get; set; } = null!;
         public decimal Balance { get; set; }
+        public decimal PendingBalance { get; set; }
         public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
-        public int LifeTimeEarnings { get; set; }
+        public decimal LifeTimeEarnings { get; set; }
 
     }
 }

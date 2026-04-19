@@ -15,40 +15,35 @@ public class DiscountService : IDiscountService
         _mapper = mapper;
     }
 
-    // 🔥 أهم ميثود (اللي هتستخدم في Order)
-    public async Task<CreateDiscountDto> ApplyDiscountAsync(string code, decimal orderTotal)
+    public async Task<DiscountDto> ApplyDiscountAsync(string code, decimal orderTotal)
     {
         var discount = await _repo.GetActiveDiscountByCodeAsync(code);
 
         if (discount == null)
             throw new Exception("Invalid or expired discount code");
 
-        // 🔥 Business Logic
         if (orderTotal < discount.MinOrderAmount)
             throw new Exception("Minimum order amount not reached");
 
-        return _mapper.Map<CreateDiscountDto>(discount);
+        return _mapper.Map<DiscountDto>(discount);
     }
 
-    // 📋 Get All
-    public async Task<IReadOnlyList<CreateDiscountDto>> GetAllAsync()
+    public async Task<IReadOnlyList<DiscountDto>> GetAllAsync()
     {
         var discounts = await _repo.GetAllAsync();
-        return _mapper.Map<IReadOnlyList<CreateDiscountDto>>(discounts);
+        return _mapper.Map<IReadOnlyList<DiscountDto>>(discounts);
     }
 
-    // 🔍 Get By Id
-    public async Task<CreateDiscountDto> GetByIdAsync(int id)
+    public async Task<DiscountDto> GetByIdAsync(int id)
     {
         var discount = await _repo.GetByIdAsync(id);
 
         if (discount == null)
             throw new Exception("Discount not found");
 
-        return _mapper.Map<CreateDiscountDto>(discount);
+        return _mapper.Map<DiscountDto>(discount);
     }
 
-    // ➕ Add
     public async Task AddAsync(CreateDiscountDto dto)
     {
         var discount = _mapper.Map<Discount>(dto);
@@ -57,8 +52,7 @@ public class DiscountService : IDiscountService
         await _repo.AddAsync(discount);
     }
 
-    // ✏️ Update
-    public async Task UpdateAsync(CreateDiscountDto dto)
+    public async Task UpdateAsync(UpdateDiscountDto dto)
     {
         var existing = await _repo.GetByIdAsync(dto.Id);
 
@@ -75,7 +69,6 @@ public class DiscountService : IDiscountService
         await _repo.UpdateAsync(existing);
     }
 
-    // ❌ Delete (Soft Delete)
     public async Task DeleteAsync(int id)
     {
         await _repo.DeleteAsync(id);
