@@ -32,6 +32,8 @@ public class PaymentService : IPaymentService
 
         if (order == null)
             throw new Exception("Order not found");
+        if (order.Status != OrderStatus.Pending)
+            throw new Exception($"Order is already {order.Status} ");
 
         var payment = new Payment
         {
@@ -54,6 +56,8 @@ public class PaymentService : IPaymentService
 
         payment.TransactionReference = paymobOrderId.ToString();
         await _repo.UpdateAsync(payment);
+         order.Status=OrderStatus.Processing;
+        await _orderRepo.UpdateOrder(order);
 
         return new PaymentResponseDto
         {
