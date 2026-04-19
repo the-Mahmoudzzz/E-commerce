@@ -111,16 +111,17 @@ namespace e_commerce.app.Services.Implementation
                 OrderDetails = orderDetails
             };
 
-            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto {
-                Message="Order is Created sacsessfully",
-                UserId=userId,
-                Title="Order Created"
-            }
-            );
+            
 
             // 8. نحفظ الأوردر في الداتا بيز (الريبو بتاعك بيعمل SaveChanges جواه فمش محتاجين نعملها هنا)
             await _orderRepo.CreateOrderAsync(order);
-
+            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto
+            {
+                Message = $"Your oreder  {order.Id} is Confiremed",
+                UserId = userId,
+                Title = "Order Is Confiermed"
+            }
+            );
             // 9. نمسح السلة عشان العميل ميطلبهاش تاني بالغلط
             await _cartRepo.DeleteCartAsync(cart.Id);
         }
