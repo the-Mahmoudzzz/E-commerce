@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using e_commerce.app.Dto.NotificationDto;
 using e_commerce.app.Dto.ShipmentDTO;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
@@ -16,11 +17,13 @@ namespace e_commerce.app.Services.Implementation
     {
         private readonly IShipmentRepo _repo;
         private readonly IMapper _mapper;
+        private readonly INotificationService _notificationService;
 
-        public ShipmentService(IShipmentRepo repo, IMapper mapper)
+        public ShipmentService(IShipmentRepo repo, IMapper mapper, INotificationService notificationService)
         {
             _repo = repo;
             _mapper = mapper;
+            _notificationService = notificationService;
         }
 
         public async Task<ShipmentDto> GetByIdAsync(int id)
@@ -53,11 +56,24 @@ namespace e_commerce.app.Services.Implementation
                 throw new Exception("Shipment not found");
 
             shipment.Status = dto.Status;
+            if (dto.Status == ShipmentStatus.Shipped)
+                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                {
+                    UserId = shipment.order.CustomerId,
+                    Title = "your order is beeing ship",
+                    Message = $"trakig number : {dto.TrackingNumber}"
+                });
 
-            
+
             if (dto.Status == ShipmentStatus.Delivered)
             {
                 shipment.DelevierdDate = DateTime.Now;
+                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                {
+                    UserId = shipment.order.CustomerId,
+                    Title = "are the order have deliverd ? feedback us",
+                    Message = $"{dto.TrackingNumber}"
+                });
             }
 
             _repo.Update(shipment);

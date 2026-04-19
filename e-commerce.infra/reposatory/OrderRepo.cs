@@ -41,5 +41,11 @@ namespace e_commerce.infra.reposatory
            .ToListAsync();
 
         }
+
+        public async Task UpdateOrder(Order order)
+        {
+           _context.orders.Update(order);
+            await _context.SaveChangesAsync();
+        }
     }
 }

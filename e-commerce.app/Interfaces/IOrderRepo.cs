@@ -13,5 +13,6 @@ namespace e_commerce.app.Interfaces
         Task<Order> GetOrderById(int orderId);
 
        Task<IReadOnlyList<Order>> GetOrderByUser(int Customerid);
+        Task UpdateOrder(Order order);
     }
 }

@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.PayMentDTO;
+﻿using e_commerce.app.Dto.NotificationDto;
+using e_commerce.app.Dto.PayMentDTO;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
@@ -12,18 +13,21 @@ public class PaymentService : IPaymentService
     private readonly IPaymobService _paymob;
     private readonly IOrderRepo _orderRepo;
     private readonly IConfiguration _config;
+    private readonly INotificationService _notificationService;
 
     public PaymentService(
         IPaymentRepository repo,
         IPaymobService paymob,
            IOrderRepo orderRepo,
 
-        IConfiguration config)
+        IConfiguration config,
+        INotificationService notificationService)
     {
         _repo = repo;
         _orderRepo = orderRepo;
         _paymob = paymob;
         _config = config;
+        _notificationService = notificationService;
     }
 
     public async Task<PaymentResponseDto> CreatePaymentAsync(CreatePaymentDto dto)
@@ -32,6 +36,8 @@ public class PaymentService : IPaymentService
 
         if (order == null)
             throw new Exception("Order not found");
+        if (order.Status != OrderStatus.Pending)
+            throw new Exception($"Order is already {order.Status} ");
 
         var payment = new Payment
         {
@@ -54,7 +60,6 @@ public class PaymentService : IPaymentService
 
         payment.TransactionReference = paymobOrderId.ToString();
         await _repo.UpdateAsync(payment);
-
         return new PaymentResponseDto
         {
             PaymentId = payment.Id,
@@ -78,10 +83,20 @@ public class PaymentService : IPaymentService
 
             var order = await _orderRepo.GetOrderById(payment.OrderId);
             order.Status = OrderStatus.Processing;
+            await _orderRepo.UpdateOrder(order);
+            await _notificationService.AddNotifiAsync(new e_commerce.app.Dto.NotificationDto.CreateNotificationDto
+            {
+                Message = $"Payment Sacssefully ",
+
+                Title = "Confirm Payment",
+                UserId = order.CustomerId
+
+            });
         }
         else
         {
             payment.Status = PaymentStatus.Refused;
+            
         }
 
         await _repo.UpdateAsync(payment);
