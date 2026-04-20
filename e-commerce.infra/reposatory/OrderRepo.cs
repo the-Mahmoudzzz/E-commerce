@@ -47,5 +47,13 @@ namespace e_commerce.infra.reposatory
            _context.orders.Update(order);
             await _context.SaveChangesAsync();
         }
+        public async Task<IEnumerable<Order>>GetIncomingOrder(int sellerid)
+        {
+            return  _context.orders.Include(o=>o.Customer).Include(o=>o.OrderDetails)
+                .ThenInclude(o=>o.Product).Where(o => o.OrderDetails.Any(d => d.Product.SellerId == sellerid))
+            .OrderByDescending(o=>o.CreatedAt);
+            
+            
+        }
     }
 }

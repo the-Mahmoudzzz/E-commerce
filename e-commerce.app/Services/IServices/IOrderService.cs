@@ -13,6 +13,7 @@ namespace e_commerce.app.Services.IServices
         Task CreateOrder(OrderCreateDto order);
         Task <OrderDTO> GetOrderById(int orderid);
         Task<IReadOnlyList<OrderDTO>> GetOrderByCustomerId(int customeid);
+        Task<IEnumerable<OrderDTO>> GetIncomingOrder();
 
     }
 }

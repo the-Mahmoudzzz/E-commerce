@@ -25,7 +25,7 @@ namespace e_commerce.api.Controllers
             return Ok(basketDto ?? new ShoppingCartDto { Id = id });
         }
 
-        [HttpPost]
+        [HttpPut]
         public async Task<ActionResult<ShoppingCartDto>> UpdateBasket(ShoppingCartDto basketDto) // بنستقبل وبنرجع DTO
         {
             // السيرفس دلوقتي هي اللي بتاخد الـ DTO وتعمل الـ Validation والمابينج وتكلم الداتا بيز
