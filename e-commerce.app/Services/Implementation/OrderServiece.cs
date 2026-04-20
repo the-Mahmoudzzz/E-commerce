@@ -126,6 +126,17 @@ namespace e_commerce.app.Services.Implementation
             await _cartRepo.DeleteCartAsync(cart.Id);
         }
 
+        public async Task<IEnumerable<OrderDTO>> GetIncomingOrder()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+             .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var odrders = await _orderRepo.GetIncomingOrder((int.Parse(userIdClaim)))
+                ;
+
+           return _mapper.Map<IEnumerable<OrderDTO>>(odrders);
+            
+        }
+
         public async Task<IReadOnlyList<OrderDTO>> GetOrderByCustomerId(int customeid)
         {
             // بنجيب الداتا من الريبو

@@ -70,7 +70,8 @@ namespace e_commerce.app.servieses.impelmentaion
 
             var product = await _productRepository.GetBySellerAsync(sellerId);
 
-            return product.Select(p => new summaryProductDto
+            return product.Where(p=>p.IsApproved).Select(p => new summaryProductDto
+            
             {
                 Name = p.Name,
                 Price = p.Price,

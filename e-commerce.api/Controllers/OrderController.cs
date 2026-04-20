@@ -1,5 +1,6 @@
 ﻿using e_commerce.app.Dto.OrderDto;
 using e_commerce.app.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,6 +42,18 @@ namespace e_commerce.api.Controllers
 
             return Ok(order);
         }
+        //[Authorize("Seller")]
+        [HttpGet("seller")]
+        public async Task<ActionResult<OrderDTO>> GetSellerOrder()
+        {
+            var order = await _orderService.GetIncomingOrder();
+
+            if (order == null)
+                return NotFound();
+
+            return Ok(order);
+        }
+
     }
 }
 
