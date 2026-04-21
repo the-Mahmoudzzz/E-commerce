@@ -42,7 +42,7 @@ namespace e_commerce.api.Controllers
 
             return Ok(order);
         }
-        //[Authorize("Seller")]
+        [Authorize(Roles ="Seller")]
         [HttpGet("seller")]
         public async Task<ActionResult<OrderDTO>> GetSellerOrder()
         {

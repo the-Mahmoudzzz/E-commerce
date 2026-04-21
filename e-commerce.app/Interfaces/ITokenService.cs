@@ -9,6 +9,6 @@ namespace e_commerce.app
 {
  interface ITokenService
     {
-        public string GetToken(User user);
+        public Task <string> GetToken(User user);
     }
 }
