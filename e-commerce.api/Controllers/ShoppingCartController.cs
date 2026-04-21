@@ -19,9 +19,11 @@ namespace e_commerce.api.Controllers
             _cartService = cartService;
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ShoppingCartDto>> GetBasketById(int id) // بنرجع DTO
+        [HttpGet("Basket")]
+        public async Task<ActionResult<ShoppingCartDto>> GetBasketById()
+            
         {
+            int id= int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var basketDto = await _cartService.GetCartAsync(id);
 
             return Ok(basketDto ?? new ShoppingCartDto { Id = id });
