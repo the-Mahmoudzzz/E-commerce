@@ -59,6 +59,37 @@ namespace e_commerce.app.Services.Implementation
 
             return _mapper.Map<ShoppingCartDto>(updatedCart);
         }
+        public async Task AddItemsToCartAsync(int userId, int productId, int quantity)
+        {
+            var cart = await _cartRepository.GetCartAsync(userId);
+
+            if (cart == null)
+                throw new Exception("Cart not found");
+
+            var product = await _productRepository.GetByIdAsync(productId);
+
+            if (product == null)
+                throw new Exception("Product not found");
+
+            var existingItem = cart.Items
+                .FirstOrDefault(i => i.ProductId == productId);
+
+            if (existingItem != null)
+            {
+                existingItem.Quantity += quantity;
+            }
+            else
+            {
+                cart.Items.Add(new ShoppingCartItem
+                {
+                    ProductId = productId,
+                    Quantity = quantity,
+                    ShoppingCartId = cart.Id
+                });
+            }
+
+            await _cartRepository.UpdateCartAsync(cart);
+        }
 
         public async Task<bool> DeleteCartAsync(int cartId)
         {
