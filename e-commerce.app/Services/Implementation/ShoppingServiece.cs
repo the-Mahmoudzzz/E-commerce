@@ -88,7 +88,7 @@ namespace e_commerce.app.Services.Implementation
                 });
             }
 
-            await _cartRepository.UpdateCartAsync(cart);
+           
         }
 
         public async Task<bool> DeleteCartAsync(int cartId)
