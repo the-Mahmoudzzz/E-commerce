@@ -70,7 +70,7 @@ namespace e_commerce.app.Services.Implementation
 
             var product = await _productRepository.GetByIdAsync(productId);
 
-            if (product == null)
+            if (product == null||!product.IsApproved||!product.IsActive)
                 throw new Exception("Product not found");
 
             var existingItem = cart.Items

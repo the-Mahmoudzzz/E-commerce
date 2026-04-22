@@ -9,8 +9,6 @@ namespace e_commerce.app.Dto.OrderDto
     public class OrderCreateDto
     {
         
-        public int CartId { get; set; }
-
         public int UserAddressId { get; set; }
 
         public int ShippingZoneId { get; set; }
