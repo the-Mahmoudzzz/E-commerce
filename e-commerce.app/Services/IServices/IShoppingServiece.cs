@@ -10,8 +10,8 @@ namespace e_commerce.app.Services.IServices
     public interface IShoppingServiece
     {
         Task<ShoppingCartDto?> GetCartAsync(int cartId);
-        Task<ShoppingCartDto?> UpdateCartAsync(ShoppingCartDto basketDto);
+        Task<ShoppingCartDto?> UpdateCartAsync(UpdateCartDto basketDto);
         Task AddItemsToCartAsync(int userId, int productId, int quantity);
-        Task<bool> DeleteCartAsync(int cartId);
+        Task<bool> DeleteCartItemsAsync(int cartId);
     }
 }

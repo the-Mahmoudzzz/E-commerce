@@ -27,48 +27,50 @@ namespace e_commerce.app.Services.Implementation
             _productRepository = productRepository;
         }
 
-        public async Task<ShoppingCartDto?> GetCartAsync(int cartId)
+        public async Task<ShoppingCartDto?> GetCartAsync(int userid)
         {
-            var cart = await _cartRepository.GetCartAsync(cartId);
+            var cart = await _cartRepository.GetUserCartAsync(userid);
             return cart == null ? null : _mapper.Map<ShoppingCartDto>(cart);
         }
 
-        public async Task<ShoppingCartDto?> UpdateCartAsync(ShoppingCartDto basketDto)
+        public async Task<ShoppingCartDto?> UpdateCartAsync(UpdateCartDto basketDto)
         {
+            if (basketDto.Items == null || !basketDto.Items.Any())
+                return null;
+
             var productIds = basketDto.Items.Select(i => i.ProductId).Distinct().ToList();
 
             // 2. نجيب كل المنتجات دي من الداتا بيز في Query واحدة بس!
             var products = await _productRepository.GetProductsByIdsAsync(productIds);
 
+
             // 3. نلّف على السلة ونحدث الأسعار من الميموري (بدون ما نكلم الداتا بيز تاني)
-            foreach (var item in basketDto.Items)
+            var cartEntity = _mapper.Map<ShopingCart>(basketDto);
+            if (cartEntity == null)
+                return null;
+            foreach (var item in cartEntity.Items)
             {
                 var product = products.FirstOrDefault(p => p.Id == item.ProductId);
                 if (product != null)
                 {
-                    item.Price = product.Price;
-                    item.ProductName = product.Name;
+                    item.PriceAtTime = product.Price;
                 }
+                
             }
-
-            // 4. نحول من DTO لـ Entity
-            var cartEntity = _mapper.Map<ShopingCart>(basketDto);
-
-            // 5. نحفظ في الداتا بيز عن طريق الـ Repo بتاع السلة
             var updatedCart = await _cartRepository.UpdateCartAsync(cartEntity);
 
             return _mapper.Map<ShoppingCartDto>(updatedCart);
         }
         public async Task AddItemsToCartAsync(int userId, int productId, int quantity)
         {
-            var cart = await _cartRepository.GetCartAsync(userId);
+            var cart = await _cartRepository.GetUserCartAsync(userId);
 
             if (cart == null)
                 throw new Exception("Cart not found");
 
             var product = await _productRepository.GetByIdAsync(productId);
 
-            if (product == null)
+            if (product == null||!product.IsApproved||!product.IsActive)
                 throw new Exception("Product not found");
 
             var existingItem = cart.Items
@@ -77,23 +79,27 @@ namespace e_commerce.app.Services.Implementation
             if (existingItem != null)
             {
                 existingItem.Quantity += quantity;
+
+                await _cartRepository.UpdateCartAsync(cart);
             }
             else
             {
-                cart.Items.Add(new ShoppingCartItem
+                var newitem= new ShoppingCartItem
                 {
                     ProductId = productId,
                     Quantity = quantity,
                     ShoppingCartId = cart.Id
-                });
+                };
+                await _cartRepository.AddItemToCartAsync(cart.Id, newitem);
             }
+          
 
            
         }
 
-        public async Task<bool> DeleteCartAsync(int cartId)
+        public async Task<bool> DeleteCartItemsAsync(int userid)
         {
-            return await _cartRepository.DeleteCartAsync(cartId);
+            return await _cartRepository.DeleteCartItemsAsync(userid);
         }
     }
 }

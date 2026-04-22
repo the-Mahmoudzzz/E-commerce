@@ -20,7 +20,7 @@ namespace e_commerce.infra.reposatory
             _context = context;
         }
 
-        public async Task<ShopingCart?> GetCartAsync(int userId)
+        public async Task<ShopingCart?> GetUserCartAsync(int userId)
         {
             return await _context.shopingCarts
                 .Include(s => s.Custmoer)
@@ -62,7 +62,11 @@ namespace e_commerce.infra.reposatory
             }
 
             await _context.SaveChangesAsync();
-            return await GetCartAsync(cart.Id); 
+            return await _context.shopingCarts
+        .Include(s => s.Custmoer)
+        .Include(c => c.Items)
+            .ThenInclude(p => p.Product)
+        .FirstOrDefaultAsync(c => c.Id == cart.Id);
         }
         public async Task AddItemToCartAsync(int cartId, ShoppingCartItem item)
         {
@@ -79,26 +83,30 @@ namespace e_commerce.infra.reposatory
             if (existingItem != null)
             {
                 existingItem.Quantity += item.Quantity;
+                _context.shoppingCartItems.Update(existingItem);
             }
             else
             {
                 item.ShoppingCartId = cartId;
-                cart.Items.Add(item);
+                await _context.shoppingCartItems.AddAsync(item);
             }
+          
 
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteCartAsync(int cartId)
+        public async Task<bool> DeleteCartItemsAsync(int userid)
         {
-            var cartitem = await _context.shoppingCartItems
-                .Where(s=>s.ShoppingCartId==cartId).ToListAsync();
-            if (!cartitem.Any()) {
+            var cartExists =await GetUserCartAsync(userid);
+
+            if (cartExists==null)
                 return false;
+            var cartitem = await _context.shoppingCartItems
+                .Where(s=>s.ShoppingCartId==cartExists.Id).ToListAsync();
+            if (cartitem.Any()) {
+                _context.shoppingCartItems.RemoveRange(cartitem);
+                await _context.SaveChangesAsync();
             }
-           
-            _context.shoppingCartItems.RemoveRange(cartitem);
-            await _context.SaveChangesAsync();
             return true;
         }
     }

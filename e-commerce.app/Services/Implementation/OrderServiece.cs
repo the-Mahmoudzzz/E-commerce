@@ -58,14 +58,14 @@ namespace e_commerce.app.Services.Implementation
             int userId = int.Parse(userIdClaim);
             // 1. نجيب السلة بالمنتجات بتاعتها
             // (بفترض إنك عامل ميثود GetCartAsync في الـ IShoppingCartRepo)
-            var cart = await _shoppingServiece.GetCartAsync(orderDto.CartId);
+            var cart = await _shoppingServiece.GetCartAsync(userId);
             if (cart == null || !cart.Items.Any())
                 throw new Exception("السلة فاضية أو غير موجودة");
             
 
             // 2. نحسب الإجمالي بتاع المنتجات
             decimal totalPrice = cart.Items.Sum(item => item.Price * item.Quantity);
-            Console.WriteLine(totalPrice);
+            
 
             // 3. نحسب تكلفة الشحن من جدول الـ ShippingZones
             var zone = await _shippingService.GetZoneAsync(orderDto.ShippingZoneId);
@@ -117,12 +117,11 @@ namespace e_commerce.app.Services.Implementation
             {
                 Message = $"Your oreder  {order.Id} is Confiremed",
                 UserId = userId,
-                Title = "Order Is Confiermed"
+                Title = "Order Is Confiermed",
             }
            );
 
-            // 9. نمسح السلة عشان العميل ميطلبهاش تاني بالغلط
-            await _cartRepo.DeleteCartAsync(cart.Id);
+            await _cartRepo.DeleteCartItemsAsync(userId);
         }
 
         public async Task<IEnumerable<OrderDTO>> GetIncomingOrder()
