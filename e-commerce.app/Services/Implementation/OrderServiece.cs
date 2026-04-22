@@ -58,7 +58,7 @@ namespace e_commerce.app.Services.Implementation
             int userId = int.Parse(userIdClaim);
             // 1. نجيب السلة بالمنتجات بتاعتها
             // (بفترض إنك عامل ميثود GetCartAsync في الـ IShoppingCartRepo)
-            var cart = await _shoppingServiece.GetCartAsync(orderDto.CartId);
+            var cart = await _shoppingServiece.GetCartAsync(userId);
             if (cart == null || !cart.Items.Any())
                 throw new Exception("السلة فاضية أو غير موجودة");
             
@@ -117,7 +117,7 @@ namespace e_commerce.app.Services.Implementation
             {
                 Message = $"Your oreder  {order.Id} is Confiremed",
                 UserId = userId,
-                Title = "Order Is Confiermed"
+                Title = "Order Is Confiermed",
             }
            );
 

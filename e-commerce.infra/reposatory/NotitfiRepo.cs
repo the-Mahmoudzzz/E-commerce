@@ -21,6 +21,7 @@ namespace e_commerce.infra.reposatory
 
         public async Task AddNotifiAsync(Notification notification)
         {
+            notification.CreatedAt= DateTime.Now;
             await _con.AddAsync(notification);
             await _con.SaveChangesAsync();
         }
