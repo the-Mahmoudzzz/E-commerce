@@ -20,7 +20,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet("Basket")]
-        public async Task<ActionResult<ShoppingCartDto>> GetBasketById()
+        public async Task<ActionResult<ShoppingCartDto>> GetUserBasket()
             
         {
             int id= int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
@@ -29,7 +29,7 @@ namespace e_commerce.api.Controllers
             return Ok(basketDto ?? new ShoppingCartDto { Id = id });
         }
         [HttpPost("add-item")]
-        public async Task<IActionResult> AddItem(int productId, int quantity)
+        public async Task<IActionResult> AddItemToUserCart(int productId, int quantity)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
@@ -38,17 +38,18 @@ namespace e_commerce.api.Controllers
             return Ok("Item added to cart");
         }
         [HttpPut]
-        public async Task<ActionResult<ShoppingCartDto>> UpdateBasket(ShoppingCartDto basketDto) // بنستقبل وبنرجع DTO
+        public async Task<ActionResult<ShoppingCartDto>> UpdateBasket(UpdateCartDto basketDto) // بنستقبل وبنرجع DTO
         {
             // السيرفس دلوقتي هي اللي بتاخد الـ DTO وتعمل الـ Validation والمابينج وتكلم الداتا بيز
             var updatedBasket = await _cartService.UpdateCartAsync(basketDto);
             return Ok(updatedBasket);
         }
 
-        [HttpDelete("{id}")]
-        public async Task DeleteBasket(int id)
+        [HttpDelete]
+        public async Task DeleteBasketItems()
         {
-            await _cartService.DeleteCartAsync(id);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            await _cartService.DeleteCartItemsAsync(userId);
         }
     }
 }

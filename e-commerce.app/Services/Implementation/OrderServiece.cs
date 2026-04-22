@@ -65,7 +65,7 @@ namespace e_commerce.app.Services.Implementation
 
             // 2. نحسب الإجمالي بتاع المنتجات
             decimal totalPrice = cart.Items.Sum(item => item.Price * item.Quantity);
-            Console.WriteLine(totalPrice);
+            
 
             // 3. نحسب تكلفة الشحن من جدول الـ ShippingZones
             var zone = await _shippingService.GetZoneAsync(orderDto.ShippingZoneId);
@@ -121,8 +121,7 @@ namespace e_commerce.app.Services.Implementation
             }
            );
 
-            // 9. نمسح السلة عشان العميل ميطلبهاش تاني بالغلط
-            await _cartRepo.DeleteCartAsync(cart.Id);
+            await _cartRepo.DeleteCartItemsAsync(userId);
         }
 
         public async Task<IEnumerable<OrderDTO>> GetIncomingOrder()
