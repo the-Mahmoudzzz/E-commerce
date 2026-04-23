@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using e_commerce.app.servieses.iserviese;
-using e_commerce.app.Dto;
+using e_commerce.app.Dto.ProductDto;
 
 namespace e_commerce.api.Controllers
 {
@@ -96,6 +96,26 @@ namespace e_commerce.api.Controllers
             catch (Exception ex)
             {
                 return NotFound(ex.Message);
+            }
+        }
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] ProductSearchDto searchParams)
+        {
+            try
+            {
+                var result = await _productService.SearchAsync(searchParams);
+
+                return Ok(new
+                {
+                    Data = result.Products,
+                    TotalCount = result.TotalCount,
+                    Page = searchParams.Page,
+                    PageSize = searchParams.PageSize
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 

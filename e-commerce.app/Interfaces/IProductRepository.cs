@@ -1,4 +1,5 @@
-﻿using e_commerce.core.entities;
+﻿using e_commerce.app.Dto.ProductDto;
+using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,8 @@ namespace e_commerce.app.interfaces
         Task DeleteAsync(int id);
         Task<IEnumerable<Product>> GetBySellerAsync(int sellerId);
         Task<IReadOnlyList<Product>> GetProductsByIdsAsync(IEnumerable<int> productIds);
+        Task<(IEnumerable<Product> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams);
+
 
 
     }

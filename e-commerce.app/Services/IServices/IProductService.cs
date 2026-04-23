@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto;
+﻿using e_commerce.app.Dto.ProductDto;
+using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace e_commerce.app.servieses.iserviese
             Task UpdateProductAsync(int id, UpdateProductBySellerDto dto);
             Task ApproveProductAsync(int id, ApproveProductByAdminDto dto);
             Task DeleteProductAsync(int id);
-      
+        Task<(IEnumerable<summaryProductDto> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams);
+
     }
 }

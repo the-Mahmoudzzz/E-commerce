@@ -1,4 +1,4 @@
-﻿using e_commerce.app.Dto;
+﻿using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.interfaces;
 using e_commerce.app.servieses.iserviese;
 using e_commerce.core.entities;
@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace e_commerce.app.servieses.impelmentaion
 {
@@ -147,5 +148,23 @@ namespace e_commerce.app.servieses.impelmentaion
 
             await _productRepository.DeleteAsync(id);
         }
+        public async Task<(IEnumerable<summaryProductDto> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams)
+        {
+            // هنا بنكلم الـ Repository يجيب الداتا متفلترة وجاهزة من الداتابيز
+            var result = await _productRepository.SearchAsync(searchParams);
+
+            // بنعمل Mapping للـ Data عشان نرجعها في شكل summaryProductDto
+            var mappedProducts = result.Products.Select(p => new summaryProductDto
+            {
+                Name = p.Name,
+                Price = p.Price,
+                ImageUrl = p.ImageUrl,
+                CategoryName = p.Category.Name,
+                Quantity = p.Quantity
+            });
+
+            return (mappedProducts, result.TotalCount);
+        }
     }
+
 }
