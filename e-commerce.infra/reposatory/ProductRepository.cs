@@ -1,4 +1,5 @@
-﻿using e_commerce.app.interfaces;
+﻿using e_commerce.app.Dto.ProductDto;
+using e_commerce.app.interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -74,6 +75,50 @@ namespace e_commerce.infra.reposatory
             return await _context.products
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
+        }
+        public async Task<(IEnumerable<Product> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams)
+        {
+            // بنبدأ الـ Query وبنجيب المنتجات المتوافق عليها والمفعلة بس
+            var query = _context.products
+                .Include(p => p.Category) // عشان نجيب اسم القسم
+                .Where(p => p.IsApproved && p.IsActive)
+                .AsQueryable();
+
+            // 1. فلتر البحث بالاسم أو الوصف
+            if (!string.IsNullOrWhiteSpace(searchParams.Q))
+            {
+                var searchWord = searchParams.Q.ToLower();
+                query = query.Where(p => p.Name.ToLower().Contains(searchWord) ||
+                                         p.Description.ToLower().Contains(searchWord));
+            }
+
+            // 2. فلتر القسم
+            if (searchParams.CategoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == searchParams.CategoryId.Value);
+            }
+
+            // 3. فلتر السعر (الأقل والأكثر)
+            if (searchParams.MinPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= searchParams.MinPrice.Value);
+            }
+            if (searchParams.MaxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= searchParams.MaxPrice.Value);
+            }
+
+            // بنحسب العدد الكلي للمنتجات اللي طلعت من الفلتر (عشان الـ Pagination في الفرونت اند)
+            var totalCount = await query.CountAsync();
+
+            // 4. تطبيق الـ Pagination (تخطي الصفحات اللي فاتت وجلب عدد عناصر الصفحة الحالية)
+            var skip = (searchParams.Page - 1) * searchParams.PageSize;
+            var products = await query
+                .Skip(skip)
+                .Take(searchParams.PageSize)
+                .ToListAsync();
+
+            return (products, totalCount);
         }
 
     }
