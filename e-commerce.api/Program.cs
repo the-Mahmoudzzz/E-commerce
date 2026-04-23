@@ -22,6 +22,7 @@ using System.Text;
 using Web.App.Services;
 
 
+
 namespace e_commerce.api
 {
     public class Program
@@ -154,6 +155,11 @@ namespace e_commerce.api
             builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
             builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
             builder.Services.AddScoped<ISellerWalletService, SellerWalletService>();
+
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
+            
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
 
             var app = builder.Build();
             //            using (var scope = app.Services.CreateScope())
