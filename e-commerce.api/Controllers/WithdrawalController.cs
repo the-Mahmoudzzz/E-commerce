@@ -1,7 +1,9 @@
 ﻿using e_commerce.app.Dto.WirhDrawlsDTO;
 using e_commerce.app.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace e_commerce.api.Controllers
 {
@@ -17,13 +19,16 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPost]
+        [Authorize (Roles ="Seller")]
         public async Task<IActionResult> Request(CreateWithdrawalDto dto)
         {
-            var result = await _service.RequestWithdrawalAsync(dto);
+            int sellerid = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var result = await _service.RequestWithdrawalAsync(sellerid,dto);
             return Ok(result);
         }
 
         [HttpPost("{id}/approve")]
+        [Authorize (Roles ="Admin")]
         public async Task<IActionResult> Approve(int id)
         {
             await _service.ApproveWithdrawalAsync(id);

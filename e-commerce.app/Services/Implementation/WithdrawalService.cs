@@ -19,9 +19,9 @@ namespace e_commerce.app.Services.Implementation
         }
 
 
-        public async Task<WithdrawalResponseDto> RequestWithdrawalAsync(CreateWithdrawalDto dto)
+        public async Task<WithdrawalResponseDto> RequestWithdrawalAsync(int sellerId,CreateWithdrawalDto dto)
         {
-            var wallet = await _walletRepo.GetBySellerIdAsync(dto.SellerId);
+            var wallet = await _walletRepo.GetBySellerIdAsync(sellerId);
 
             if (wallet == null)
                 throw new Exception("Wallet not found");
@@ -41,7 +41,7 @@ namespace e_commerce.app.Services.Implementation
 
             var withdrawal = new Withdrawal
             {
-                SelerId = dto.SellerId,
+                SelerId = sellerId,
                 Amount = dto.Amount,
                 WithdrawlsStatus = WithdrawlsStatus.Pending,
                 RequestDate = DateTime.UtcNow,

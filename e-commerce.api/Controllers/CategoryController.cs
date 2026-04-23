@@ -30,12 +30,12 @@ namespace e_commerce.api.Controllers
             var Categotis = await categoryService.GetAllSubCategoryAsync();
             return Ok(Categotis);
         }
-        [HttpGet("type/{type}")]
+        [HttpGet("type/")]
         public async Task<IActionResult> Get(int id) { 
             var category= await categoryService.GetbyIdAsync(id);
             return Ok(category);
         }
-        [HttpGet("typesub/{type}")]
+        [HttpGet("typesub/")]
         public async Task<IActionResult> GetSub(int id)
         {
             var category = await categoryService.GetbyIdSubCategoryAsync(id);

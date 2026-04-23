@@ -9,7 +9,7 @@ namespace e_commerce.app.Services.IServices
 {
     public interface IWithdrawalService
     {
-        Task<WithdrawalResponseDto> RequestWithdrawalAsync(CreateWithdrawalDto dto);
+        Task<WithdrawalResponseDto> RequestWithdrawalAsync(int sellerid,CreateWithdrawalDto dto);
         Task ApproveWithdrawalAsync(int withdrawalId);
     }
 }
