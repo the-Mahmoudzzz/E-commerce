@@ -18,22 +18,8 @@ namespace e_commerce.app.servieses.iserviese
             Task UpdateProductAsync(int id, UpdateProductBySellerDto dto, int currentSellerId);
             Task ApproveProductAsync(int id, ApproveProductByAdminDto dto);
             Task DeleteProductAsync(int id, int currentSellerId);
-        Task<(IEnumerable<summaryProductDto> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams);
-
-        Task<IEnumerable<summaryProductDto>> GetAllAsync();
-
-        Task<IEnumerable<summaryProductDto>> GetBySellerAsync(int sellerId);
-
-        Task<IEnumerable<summaryProductDto>> GetLowStockAsync(int threshold);
-
-        Task AddProductAsync(CreateProductBySellerDto dto, int sellerId);
-
-        Task UpdateProductAsync(int id, UpdateProductBySellerDto dto);
-
-        Task UpdateStockAsync(int id, int quantity);
-
-        Task ApproveProductAsync(int id, ApproveProductByAdminDto dto);
-
-        Task DeleteProductAsync(int id);
+            Task<(IEnumerable<summaryProductDto> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams);
+            Task<IEnumerable<summaryProductDto>> GetLowStockAsync(int threshold);
+            Task UpdateStockAsync(int id, int quantity);
     }
 }

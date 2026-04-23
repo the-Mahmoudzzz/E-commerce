@@ -41,6 +41,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet("seller/{sellerId}")]
+
         public async Task<IActionResult> GetBySeller(int sellerId)
         {
             var products = await _productService
@@ -50,12 +51,12 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
+        [Authorize (Roles="Seller") ]
         public async Task<IActionResult> AddProduct(
-            [FromBody] CreateProductBySellerDto dto,
-            [FromQuery] int sellerId)
+            [FromBody] CreateProductBySellerDto dto
+            )
         {
-            var sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            int sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             await _productService.AddProductAsync(dto, sellerId);
 
             return Ok("Product created and waiting for approval");
