@@ -3,12 +3,14 @@ using e_commerce.app.Dto.OrderDto;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using e_commerce.core.Enum;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -71,22 +73,23 @@ namespace e_commerce.app.Services.Implementation
             var zone = await _shippingService.GetZoneAsync(orderDto.ShippingZoneId);
             decimal shippingCost = zone != null ? zone.ShippingCost : 0;
 
-            // 4. نحسب الخصم لو العميل باعت كود خصم
+
+
+
+            var discount = await _discountService.ApplyDiscountAsync(orderDto.DiscountCode, totalPrice);
+
             decimal discountAmount = 0;
 
-            if (!string.IsNullOrEmpty(orderDto.DiscountCode))
+            if (discount.DiscountType == DiscountType.Percentage)
             {
-                var discount = await _discountService
-                    .ApplyDiscountAsync(orderDto.DiscountCode, totalPrice);
-
-                if (discount.DiscountType == "Percentage")
-                    discountAmount = totalPrice * (discount.Value / 100);
-                else
-                    discountAmount = discount.Value;
+                discountAmount = totalPrice * (discount.Value / 100);
+            }
+            else
+            {
+                discountAmount = discount.Value;
             }
 
-            // 5. الحسبة النهائية
-            decimal finalAmount = (totalPrice + shippingCost) - discountAmount;
+            var finalAmount = totalPrice - discountAmount;
 
             // 6. نجهز المنتجات عشان تتنقل لجدول OrderDetails
             var orderDetails = cart.Items.Select(item => new OrderDetail

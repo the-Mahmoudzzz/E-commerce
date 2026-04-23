@@ -75,6 +75,14 @@ namespace e_commerce.infra.reposatory
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
         }
+    
+        public async Task<IEnumerable<Product>> GetLowStockAsync(int threshold)
+        {
+            return await _context.products
+        .Include(p => p.Category)
+        .Where(p => p.Quantity <= threshold)
+        .ToListAsync();
+        }
 
     }
 }

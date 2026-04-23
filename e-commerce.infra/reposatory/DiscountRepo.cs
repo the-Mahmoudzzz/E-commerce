@@ -66,6 +66,11 @@ namespace e_commerce.infra.reposatory
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<bool> ExistsByCodeAsync(string code)
+        {
+            return await _context.Discounts
+                .AnyAsync(d => d.Code.ToLower() == code.ToLower());
+        }
     }
 }
 

@@ -16,7 +16,7 @@ namespace e_commerce.app.Interfaces
         Task<Discount> GetActiveDiscountByCodeAsync(string code);
 
         Task AddAsync(Discount discount);
-
+        Task<bool> ExistsByCodeAsync(string code);
         Task UpdateAsync(Discount discount);
 
         Task DeleteAsync(int id);

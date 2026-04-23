@@ -149,5 +149,30 @@ namespace e_commerce.app.servieses.impelmentaion
 
             await _productRepository.DeleteAsync(id);
         }
+        public async Task UpdateStockAsync(int id, int quantity)
+        {
+            var product = await _productRepository.GetByIdAsync(id);
+
+            if (product == null)
+                throw new Exception("Product not found");
+
+            product.Quantity = quantity;
+
+            await _productRepository.UpdateAsync(product);
+        }
+        public async Task<IEnumerable<summaryProductDto>> GetLowStockAsync(int threshold)
+        {
+            var products = await _productRepository.GetLowStockAsync(threshold);
+
+            return products.Select(p => new summaryProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                ImageUrl = p.ImageUrl,
+                CategoryName = p.Category.Name,
+                Quantity = p.Quantity
+            });
+        }
     }
 }

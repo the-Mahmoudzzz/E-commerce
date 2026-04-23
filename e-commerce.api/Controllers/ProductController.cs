@@ -98,6 +98,29 @@ namespace e_commerce.api.Controllers
                 return NotFound(ex.Message);
             }
         }
+        [HttpPut("{id}/stock")]
+        public async Task<IActionResult> UpdateStock(int id, int quantity)
+        {
+            await _productService.UpdateStockAsync(id, quantity);
+            return NoContent();
+        }
+        [HttpGet("{id}/stock")]
+        public async Task<IActionResult> CheckStock(int id)
+        {
+            var product = await _productService.GetByIdAsync(id);
+            return Ok(new
+            {
+                id = product.Id,
+                name = product.Name,
+                quantity = product.Quantity
+            });
+        }
+        [HttpGet("low-stock")]
+        public async Task<IActionResult> LowStock(int threshold = 5)
+        {
+            var result = await _productService.GetLowStockAsync(threshold);
+            return Ok(result);
+        }
 
 
     }
