@@ -33,8 +33,8 @@ namespace e_commerce.api.Controllers
         {
             if (!ModelState.IsValid || register == null)
                 return BadRequest(ModelState);
-
-            await _authService.RegisterAsync(register, $"{Request.Scheme}://{Request.Host}");
+            var baseUrl = "http://44.201.183.151"; 
+            await _authService.RegisterAsync(register, baseUrl);
 
             return Ok("User registered successfully. Check your email.");
         }

@@ -3,6 +3,7 @@ using e_commerce.app.Dto;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using e_commerce.core.Enum;
 
 public class DiscountService : IDiscountService
 {
@@ -15,7 +16,7 @@ public class DiscountService : IDiscountService
         _mapper = mapper;
     }
 
-    public async Task<DiscountDto> ApplyDiscountAsync(string code, decimal orderTotal)
+    public async Task<Discount> ApplyDiscountAsync(string code, decimal orderTotal)
     {
         var discount = await _repo.GetActiveDiscountByCodeAsync(code);
 
@@ -25,7 +26,7 @@ public class DiscountService : IDiscountService
         if (orderTotal < discount.MinOrderAmount)
             throw new Exception("Minimum order amount not reached");
 
-        return _mapper.Map<DiscountDto>(discount);
+        return discount;
     }
 
     public async Task<IReadOnlyList<DiscountDto>> GetAllAsync()
@@ -46,6 +47,8 @@ public class DiscountService : IDiscountService
 
     public async Task AddAsync(CreateDiscountDto dto)
     {
+        if (await _repo.ExistsByCodeAsync(dto.Code))
+            throw new Exception("Discount code already exists");
         var discount = _mapper.Map<Discount>(dto);
         discount.IsActive = true;
 
@@ -57,15 +60,18 @@ public class DiscountService : IDiscountService
         var existing = await _repo.GetByIdAsync(dto.Id);
 
         if (existing == null)
-            throw new Exception("Discount not found");
+        {
 
+            throw new Exception("Discount not found");
+        }
         existing.Code = dto.Code;
         existing.DiscountType = dto.DiscountType;
         existing.Value = dto.Value;
         existing.StartDate = dto.StartDate;
         existing.EndDate = dto.EndDate;
         existing.MinOrderAmount = dto.MinOrderAmount;
-
+        if (await _repo.ExistsByCodeAsync(dto.Code) && existing.Code != dto.Code)
+            throw new Exception("Discount code already exists");
         await _repo.UpdateAsync(existing);
     }
 
@@ -73,4 +79,5 @@ public class DiscountService : IDiscountService
     {
         await _repo.DeleteAsync(id);
     }
+
 }
