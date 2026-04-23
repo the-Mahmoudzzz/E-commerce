@@ -154,6 +154,9 @@ namespace e_commerce.api
             builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
             builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
             builder.Services.AddScoped<ISellerWalletService, SellerWalletService>();
+            builder.Services.AddScoped<ISellerService, SellerService>();
+            builder.Services.AddScoped<ISellerRepository, SellerRepository>();
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddScoped<IAdminService, AdminService>();
 
@@ -179,6 +182,7 @@ namespace e_commerce.api
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseStaticFiles();
 
             app.MapHub<NotificationHub>("/notificationHub");
             app.MapControllers();

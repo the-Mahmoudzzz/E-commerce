@@ -1,4 +1,5 @@
-﻿using System;
+﻿using e_commerce.core.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace e_commerce.app.Dto
         public string Code { get; set; }
 
         [Required]
-        public string DiscountType { get; set; }
+        public DiscountType DiscountType { get; set; }
 
         [Required]
         public decimal Value { get; set; }

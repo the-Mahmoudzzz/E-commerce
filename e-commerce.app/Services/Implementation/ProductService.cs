@@ -1,14 +1,11 @@
-﻿using e_commerce.app.Dto.ProductDto;
+using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.interfaces;
 using e_commerce.app.servieses.iserviese;
 using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
-
 
 namespace e_commerce.app.servieses.impelmentaion
 {
@@ -20,8 +17,6 @@ namespace e_commerce.app.servieses.impelmentaion
         {
             _productRepository = productRepository;
         }
-
-
 
         public async Task<ProductDto> GetByIdAsync(int id)
         {
@@ -50,42 +45,37 @@ namespace e_commerce.app.servieses.impelmentaion
 
         public async Task<IEnumerable<summaryProductDto>> GetAllAsync()
         {
-
             var products = await _productRepository.GetAllAsync();
 
             return products
                 .Where(p => p.IsApproved && p.IsActive)
                 .Select(p => new summaryProductDto
                 {
-                    Id=p.Id,
+                    Id = p.Id,
                     Name = p.Name,
                     Price = p.Price,
                     ImageUrl = p.ImageUrl,
                     CategoryName = p.Category.Name,
                     Quantity = p.Quantity
                 });
-
-
         }
+
         public async Task<IEnumerable<summaryProductDto>> GetBySellerAsync(int sellerId)
         {
-
             var product = await _productRepository.GetBySellerAsync(sellerId);
 
-            return product.Where(p=>p.IsApproved).Select(p => new summaryProductDto
-            
+            return product.Where(p => p.IsApproved).Select(p => new summaryProductDto
             {
-                Id=p.Id,
+                Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
                 ImageUrl = p.ImageUrl,
                 CategoryName = p.Category.Name,
                 Quantity = p.Quantity
             });
-
         }
-        public async Task AddProductAsync(CreateProductBySellerDto dto, int sellerId)
 
+        public async Task AddProductAsync(CreateProductBySellerDto dto, int sellerId)
         {
             var product = new Product
             {
@@ -102,11 +92,13 @@ namespace e_commerce.app.servieses.impelmentaion
             };
             await _productRepository.AddAsync(product);
         }
+
         public async Task UpdateProductAsync(int id, UpdateProductBySellerDto dto)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
                 throw new Exception("Product not found");
+
             if (!string.IsNullOrEmpty(dto.Name))
                 product.Name = dto.Name;
             if (!string.IsNullOrEmpty(dto.Description))
@@ -119,12 +111,11 @@ namespace e_commerce.app.servieses.impelmentaion
                 product.Quantity = dto.Quantity.Value;
             if (dto.CategoryId.HasValue)
                 product.CategoryId = dto.CategoryId.Value;
+
             product.IsApproved = false;
             product.IsActive = false;
             await _productRepository.UpdateAsync(product);
         }
-
-
 
         public async Task ApproveProductAsync(int id, ApproveProductByAdminDto dto)
         {
@@ -139,8 +130,6 @@ namespace e_commerce.app.servieses.impelmentaion
             await _productRepository.UpdateAsync(product);
         }
 
-
-
         public async Task DeleteProductAsync(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
@@ -150,23 +139,32 @@ namespace e_commerce.app.servieses.impelmentaion
 
             await _productRepository.DeleteAsync(id);
         }
-        public async Task<(IEnumerable<summaryProductDto> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams)
-        {
-            // هنا بنكلم الـ Repository يجيب الداتا متفلترة وجاهزة من الداتابيز
-            var result = await _productRepository.SearchAsync(searchParams);
 
-            // بنعمل Mapping للـ Data عشان نرجعها في شكل summaryProductDto
-            var mappedProducts = result.Products.Select(p => new summaryProductDto
+        public async Task UpdateStockAsync(int id, int quantity)
+        {
+            var product = await _productRepository.GetByIdAsync(id);
+
+            if (product == null)
+                throw new Exception("Product not found");
+
+            product.Quantity = quantity;
+
+            await _productRepository.UpdateAsync(product);
+        }
+
+        public async Task<IEnumerable<summaryProductDto>> GetLowStockAsync(int threshold)
+        {
+            var products = await _productRepository.GetLowStockAsync(threshold);
+
+            return products.Select(p => new summaryProductDto
             {
+                Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
                 ImageUrl = p.ImageUrl,
                 CategoryName = p.Category.Name,
                 Quantity = p.Quantity
             });
-
-            return (mappedProducts, result.TotalCount);
         }
     }
-
 }
