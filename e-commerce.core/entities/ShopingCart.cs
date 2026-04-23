@@ -13,7 +13,7 @@ namespace e_commerce.core.entities
         public int CustmerId { get; set; }
         [ForeignKey("CustmerId")]
         public User Custmoer { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }=DateTime.Now;
         public virtual ICollection<ShoppingCartItem> Items { get; set; }
     }
 }

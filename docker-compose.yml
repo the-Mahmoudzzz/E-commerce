@@ -3,23 +3,8 @@ services:
     build: .
     container_name: ecommerce-api
     ports:
-      - "5000:8080"  
-    depends_on:
-      - db
+      - "5000:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development 
-      - ASPNETCORE_HTTP_PORTS=8080           
-      - ConnectionStrings__cs=Server=ecommerce-db;Database=MyDb;User=sa;Password=Diab1234567;TrustServerCertificate=True
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: ecommerce-db
-    environment:
-      SA_PASSWORD: "Diab1234567"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1433:1433"
-    volumes:
-      - sql_data:/var/opt/mssql
-
-volumes:
-  sql_data:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ConnectionStrings__cs=Server=db39868.public.databaseasp.net;Database=db39868;User Id=db39868;Password=b-7PJm=48Zp%;Encrypt=False;MultipleActiveResultSets=True;
