@@ -1,9 +1,8 @@
-
-using e_commerce.app.Dto;
+using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.servieses.iserviese;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims
+using System.Security.Claims;
 
 namespace e_commerce.api.Controllers
 {
@@ -23,7 +22,8 @@ namespace e_commerce.api.Controllers
         {
             try
             {
-                var product = await _productService.GetByIdAsync(id);
+                var product = await _productService
+                    .GetByIdAsync(id);
                 return Ok(product);
             }
             catch (Exception ex)
@@ -35,40 +35,46 @@ namespace e_commerce.api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _productService.GetAllAsync();
+            var products = await _productService
+                .GetAllAsync();
             return Ok(products);
         }
 
         [HttpGet("seller/{sellerId}")]
         public async Task<IActionResult> GetBySeller(int sellerId)
         {
-            var products = await _productService.GetBySellerAsync(sellerId);
+            var products = await _productService
+                .GetBySellerAsync(sellerId);
+
             return Ok(products);
         }
 
         [HttpPost]
-        [Authorize (Roles ="Seller")]
-        public async Task<IActionResult> AddProduct([FromBody] CreateProductBySellerDto dto)
+        [Authorize]
+        public async Task<IActionResult> AddProduct(
+            [FromBody] CreateProductBySellerDto dto,
+            [FromQuery] int sellerId)
         {
             var sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             await _productService.AddProductAsync(dto, sellerId);
+
             return Ok("Product created and waiting for approval");
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Seller,Admin")]
-        public async Task<IActionResult> UpdateProduct(
-            int id,
-            [FromBody] UpdateProductBySellerDto dto)
+        [Authorize]
+        public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductBySellerDto dto)
         {
             try
-            {
-                await _productService.UpdateProductAsync(id, dto);
+            {  
+                var sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                await _productService.UpdateProductAsync(id, dto, sellerId);
                 return Ok("Product updated and waiting for approval again");
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -90,17 +96,19 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles ="Admin,Seller")]
+        [Authorize]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
             {
-                await _productService.DeleteProductAsync(id);
+                var sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                await _productService.DeleteProductAsync(id, sellerId);
+
                 return Ok("Product deleted");
             }
             catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
