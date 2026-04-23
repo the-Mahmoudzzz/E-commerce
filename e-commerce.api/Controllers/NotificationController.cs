@@ -20,20 +20,21 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet]
-       // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllNotification()
         {
             return Ok(await _notificationService.GetALLAsync());
         }
 
         [HttpGet("{id}")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetNotification(int id)
         {
             return Ok(await _notificationService.GetByidAsync(id));
         }
 
         [HttpGet("my-notifications")]
+        [Authorize]
         public async Task<IActionResult> GetAllUserNotification()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -43,6 +44,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPut("{id}/read")]
+        [Authorize]
         public async Task<IActionResult> MarkAsRead(int id)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -53,6 +55,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPut("read-all")]
+        [Authorize]
         public async Task<IActionResult> MarkAllAsRead()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -63,6 +66,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize (Roles ="Admin")]
         public async Task<IActionResult> DeleteNotification(int id)
         {
             await _notificationService.Delete(id);

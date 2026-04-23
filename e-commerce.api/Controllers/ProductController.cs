@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using e_commerce.app.Dto;
 using e_commerce.app.servieses.iserviese;
-using e_commerce.app.Dto;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace e_commerce.api.Controllers
 {
@@ -48,14 +50,15 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddProduct(
-            [FromBody] CreateProductBySellerDto dto,
-            [FromQuery] int sellerId)
+        [Authorize (Roles ="Seller")]
+        public async Task<IActionResult> AddProduct([FromBody] CreateProductBySellerDto dto)
         {
+            var sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             await _productService.AddProductAsync(dto, sellerId);
             return Ok("Product created and waiting for approval");
         }
         [HttpPut("{id}")]
+        [Authorize(Roles = "Seller,Admin")]
         public async Task<IActionResult> UpdateProduct(
             int id,
             [FromBody] UpdateProductBySellerDto dto)
@@ -71,6 +74,7 @@ namespace e_commerce.api.Controllers
             }
         }
         [HttpPut("approve/{id}")]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> ApproveProduct(
             int id,
             [FromBody] ApproveProductByAdminDto dto)
@@ -86,6 +90,7 @@ namespace e_commerce.api.Controllers
             }
         }
         [HttpDelete("{id}")]
+        [Authorize(Roles ="Admin,Seller")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try

@@ -1,6 +1,7 @@
 ﻿using e_commerce.app.Dto.FeedBackDTO;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace e_commerce.api.Controllers
 
         }
         [HttpPost]
+        [Authorize(Roles ="User,Customer")]
         public async Task<IActionResult> Create(CreateFeedbackDto createFeedbackDto) {
             if (!ModelState.IsValid)
             {
@@ -30,14 +32,16 @@ namespace e_commerce.api.Controllers
             }
         }
         [HttpGet]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> GetAll() { 
         
         
-      var result=  await feedbackService.GetAllAsync();
+            var result=  await feedbackService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpGet("type/{type}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetByType(FeedbackType type)
         {
             var result = await feedbackService.GetByTypeAsync(type);

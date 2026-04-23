@@ -31,6 +31,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPost("apply")]
+        [Authorize]
         public async Task<IActionResult> ApplyDiscount([FromBody] ApplyDiscountDto dto)
         {
             var result = await _discountService.ApplyDiscountAsync(dto.Code, dto.OrderTotal);
@@ -38,6 +39,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPost]
+        [Authorize("Seller,Admin")]
         public async Task<IActionResult> Create([FromBody] CreateDiscountDto dto)
         {
             await _discountService.AddAsync(dto);
@@ -53,7 +55,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize(Roles ="Admin,Seller")]
         public async Task<IActionResult> Delete(int id)
         {
             await _discountService.DeleteAsync(id);
