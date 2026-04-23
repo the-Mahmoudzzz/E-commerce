@@ -9,6 +9,7 @@ namespace e_commerce.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class WishlistController : ControllerBase
     {
         private readonly IWishlistService wishlistService;
@@ -18,9 +19,10 @@ namespace e_commerce.api.Controllers
             this.wishlistService = wishlistService;
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetAll(int userId)
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var items = await wishlistService.GetUserWishlistAsync(userId);
             return Ok(items);
         }
@@ -47,8 +49,9 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpDelete]
-        public IActionResult Remove(int userId, int productId)
+        public IActionResult Remove(int productId)
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             wishlistService.RemoveFromWishlistAsync(userId, productId);
             return Ok();
         }

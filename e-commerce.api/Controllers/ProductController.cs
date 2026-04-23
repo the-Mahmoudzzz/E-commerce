@@ -1,4 +1,4 @@
-﻿using e_commerce.app.Dto.ProductDto;
+using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.servieses.iserviese;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,15 +10,12 @@ namespace e_commerce.api.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-
-
         private readonly IProductService _productService;
 
         public ProductController(IProductService productService)
         {
             _productService = productService;
         }
-
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -34,7 +31,6 @@ namespace e_commerce.api.Controllers
                 return NotFound(ex.Message);
             }
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -59,10 +55,12 @@ namespace e_commerce.api.Controllers
             [FromBody] CreateProductBySellerDto dto,
             [FromQuery] int sellerId)
         {
+            var sellerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             await _productService.AddProductAsync(dto, sellerId);
 
             return Ok("Product created and waiting for approval");
         }
+
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductBySellerDto dto)
@@ -79,7 +77,9 @@ namespace e_commerce.api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPut("approve/{id}")]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> ApproveProduct(
             int id,
             [FromBody] ApproveProductByAdminDto dto)
@@ -94,6 +94,7 @@ namespace e_commerce.api.Controllers
                 return NotFound(ex.Message);
             }
         }
+
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> DeleteProduct(int id)
@@ -110,27 +111,47 @@ namespace e_commerce.api.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] ProductSearchDto searchParams)
+
+        // --- Endpoints الخاصة ببرانش محمود دياب ---
+
+        [HttpPut("{id}/stock")]
+        public async Task<IActionResult> UpdateStock(int id, int quantity)
         {
             try
             {
-                var result = await _productService.SearchAsync(searchParams);
+                await _productService.UpdateStockAsync(id, quantity);
+                return Ok("Stock updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
 
+        [HttpGet("{id}/stock")]
+        public async Task<IActionResult> CheckStock(int id)
+        {
+            try
+            {
+                var product = await _productService.GetByIdAsync(id);
                 return Ok(new
                 {
-                    Data = result.Products,
-                    TotalCount = result.TotalCount,
-                    Page = searchParams.Page,
-                    PageSize = searchParams.PageSize
+                    id = product.Id,
+                    name = product.Name,
+                    quantity = product.Quantity
                 });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(ex.Message);
             }
         }
 
-
+        [HttpGet("low-stock")]
+        public async Task<IActionResult> LowStock(int threshold = 5)
+        {
+            var result = await _productService.GetLowStockAsync(threshold);
+            return Ok(result);
+        }
     }
 }

@@ -1,14 +1,19 @@
 using AutoMapper;
+using e_commerce.app.Dto.NotificationDto;
 using e_commerce.app.Dto.OrderDto;
+using e_commerce.app.interfaces;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using e_commerce.core.Enum;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -22,6 +27,7 @@ namespace e_commerce.app.Services.Implementation
         private readonly IShippingService _shippingService;
         private readonly IDiscountService _discountService;
         private readonly INotificationService _notificationService;
+        private readonly IProductRepository _productRepository;
 
 
 
@@ -34,7 +40,8 @@ namespace e_commerce.app.Services.Implementation
 ,
                 IShippingService shippingService,
                 IDiscountService discountService,
-                INotificationService notificationService)
+                INotificationService notificationService,
+                IProductRepository productRepository)
         {
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
@@ -44,12 +51,63 @@ namespace e_commerce.app.Services.Implementation
             _shippingService = shippingService;
             this._discountService = discountService;
             _notificationService = notificationService;
+            _productRepository = productRepository;
+        }
+
+        public async Task CancelOrder(int customerid,int orderid)
+        {
+            var existorder = await _orderRepo.GetOrderById(orderid);
+
+            if (existorder == null)
+                throw new Exception("Order not found");
+            if (customerid != existorder.CustomerId)
+            {
+                throw new Exception("Order not found");
+            }
+
+            if (existorder.Status != OrderStatus.Pending)
+                throw new Exception("Order cannot be canceled");
+            
+
+            existorder.Status = OrderStatus.Canceled;
+
+            foreach (var item in existorder.OrderDetails)
+            {
+                item.Status = OrderStatus.Canceled;
+                if (item.Product != null)
+                {
+                    item.Product.Quantity += item.Quantity;
+                }
+            }
+
+            var sellerIds = existorder.OrderDetails
+                .Select(i => i.Product.SellerId)
+                .Distinct();
+
+            foreach (var sellerId in sellerIds)
+            {
+                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                {
+                    UserId = sellerId,
+                    Title = "Order Canceled",
+                    Message = $"Order #{existorder.Id} has been canceled"
+                });
+            }
+
+            await _notificationService.AddNotifiAsync(new CreateNotificationDto
+            {
+                UserId = existorder.CustomerId,
+                Title = "Order Canceled",
+                Message = $"Your order #{existorder.Id} has been canceled successfully"
+            });
+
+            await _orderRepo.UpdateOrder(existorder);
         }
 
         public async Task CreateOrder(OrderCreateDto orderDto)
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?
-    .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+             .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new Exception("User not authenticated");
@@ -71,22 +129,23 @@ namespace e_commerce.app.Services.Implementation
             var zone = await _shippingService.GetZoneAsync(orderDto.ShippingZoneId);
             decimal shippingCost = zone != null ? zone.ShippingCost : 0;
 
-            // 4. نحسب الخصم لو العميل باعت كود خصم
+
+
+
+            var discount = await _discountService.ApplyDiscountAsync(orderDto.DiscountCode, totalPrice);
+
             decimal discountAmount = 0;
 
-            if (!string.IsNullOrEmpty(orderDto.DiscountCode))
+            if (discount.DiscountType == DiscountType.Percentage)
             {
-                var discount = await _discountService
-                    .ApplyDiscountAsync(orderDto.DiscountCode, totalPrice);
-
-                if (discount.DiscountType == "Percentage")
-                    discountAmount = totalPrice * (discount.Value / 100);
-                else
-                    discountAmount = discount.Value;
+                discountAmount = totalPrice * (discount.Value / 100);
+            }
+            else
+            {
+                discountAmount = discount.Value;
             }
 
-            // 5. الحسبة النهائية
-            decimal finalAmount = (totalPrice + shippingCost) - discountAmount;
+            var finalAmount = totalPrice - discountAmount;
 
             // 6. نجهز المنتجات عشان تتنقل لجدول OrderDetails
             var orderDetails = cart.Items.Select(item => new OrderDetail
@@ -146,8 +205,10 @@ namespace e_commerce.app.Services.Implementation
         {
             // بنجيب الداتا من الريبو
             var orders = await _orderRepo.GetOrderByUser(customeid);
-
+            if (orders == null)
+                throw new Exception("No Order Yet");
             // بنحولها لـ DTO عشان نعرضها للـ Frontend
+           
             return _mapper.Map<IReadOnlyList<OrderDTO>>(orders);
         }
 
@@ -158,7 +219,7 @@ namespace e_commerce.app.Services.Implementation
 
             // لو مش موجود ممكن نرجع null أو نرمي Exception حسب اللوجيك بتاعك
             if (order == null) return null;
-
+            
             // بنحوله لـ DTO
             return _mapper.Map<OrderDTO>(order);
         }

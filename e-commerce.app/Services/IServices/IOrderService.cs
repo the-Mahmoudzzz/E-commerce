@@ -14,6 +14,7 @@ namespace e_commerce.app.Services.IServices
         Task <OrderDTO> GetOrderById(int orderid);
         Task<IReadOnlyList<OrderDTO>> GetOrderByCustomerId(int customeid);
         Task<IEnumerable<OrderDTO>> GetIncomingOrder();
+        Task CancelOrder(int cutomerid,int orderid);
 
     }
 }

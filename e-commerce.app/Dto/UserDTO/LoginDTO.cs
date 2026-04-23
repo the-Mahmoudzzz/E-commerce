@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Web.App.DTOs
+namespace e_commerce.app.Dto.UserDTO
 {
     public class LoginDTO
     {
