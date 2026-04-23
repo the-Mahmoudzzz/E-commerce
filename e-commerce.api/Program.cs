@@ -155,6 +155,8 @@ namespace e_commerce.api
             builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
             builder.Services.AddScoped<ISellerWalletService, SellerWalletService>();
 
+            builder.Services.AddScoped<IAdminService, AdminService>();
+
             var app = builder.Build();
             //            using (var scope = app.Services.CreateScope())
             //{

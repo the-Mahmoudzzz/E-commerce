@@ -35,8 +35,8 @@ namespace e_commerce.infra.reposatory
         public async Task<IReadOnlyList<Order>> GetOrderByUser(int Customerid)
         {
             return await _context.orders
-           .Include(o => o.OrderDetails)
-           .Where(o => o.CustomerId == Customerid)
+           .Include(o => o.OrderDetails).ThenInclude(p=>p.Product)
+           .Where(o => o.CustomerId == Customerid && o.Status != OrderStatus.Canceled && o.Status != OrderStatus.Refused)
            .OrderByDescending(o => o.CreatedAt) 
            .ToListAsync();
 
@@ -49,11 +49,25 @@ namespace e_commerce.infra.reposatory
         }
         public async Task<IEnumerable<Order>>GetIncomingOrder(int sellerid)
         {
-            return  _context.orders.Include(o=>o.Customer).Include(o=>o.OrderDetails)
+            return   _context.orders.Include(o=>o.Customer).Include(o=>o.OrderDetails)
                 .ThenInclude(o=>o.Product).Where(o => o.OrderDetails.Any(d => d.Product.SellerId == sellerid))
             .OrderByDescending(o=>o.CreatedAt);
             
             
+        }
+
+        public async Task<int> GetCountOrder()
+        {
+           return await _context.orders
+              .Where(o => o.Status != OrderStatus.Canceled && o.Status != OrderStatus.Refused)
+                 .CountAsync();
+        }
+
+        public async Task<decimal> GetTotalCount()
+        {
+            return await _context.orders
+             .Where(o => o.Status == OrderStatus.Shipped)
+               .SumAsync(o => o.FinalAmount);
         }
     }
 }

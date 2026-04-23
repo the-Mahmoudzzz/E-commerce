@@ -1,4 +1,5 @@
-﻿using e_commerce.core.entities;
+﻿using e_commerce.app.Services.IServices;
+using e_commerce.core.entities;
 using e_commerce.core.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,42 +12,35 @@ namespace e_commerce.api.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
+        private readonly IAdminService _adminService;
 
-        public AdminController(UserManager<User> userManager)
+        public AdminController(IAdminService adminService)
         {
-            _userManager = userManager;
+
+            _adminService = adminService;
         }
 
 
         [HttpGet("pending-sellers")]
         public async Task<IActionResult> GetPendingSellers()
         {
-            var allSellers = await _userManager.
-                GetUsersInRoleAsync("Seller");
 
-
-            var pendingSellers = allSellers.
-                Where(u => !u.IsApproved)
-                .ToList();
-
+            var pendingSellers = await _adminService.GetAllPandingSeller();
             return Ok(pendingSellers);
         }
 
         [HttpPost("approve-seller/{userId}")]
         public async Task<IActionResult> ApproveSeller(int userId)
         {
-            var user = await _userManager
-                .FindByIdAsync(userId.ToString());
-
-            if (user == null) 
-                return NotFound("Seller Not Found");
-
-            user.IsApproved = true;
-
-            await _userManager.UpdateAsync(user);
+            await _adminService.ApproveSeller(userId);
 
             return Ok("The sealer was successfully approved.");
+        }
+        [HttpGet("dashboard/stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            var result = await _adminService.GetSats();
+            return Ok(result);
         }
     }
 }

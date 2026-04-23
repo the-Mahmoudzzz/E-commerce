@@ -1,4 +1,5 @@
 ﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.UserDTO;
 using Web.App.DTOs;
 
 namespace e_commerce.app.Services.IServices
