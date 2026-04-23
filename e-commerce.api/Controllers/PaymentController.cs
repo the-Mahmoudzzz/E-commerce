@@ -26,9 +26,10 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPost("callback")]
-        public async Task<IActionResult> Callback([FromBody] dynamic data)
+        [AllowAnonymous]
+        public async Task<IActionResult> Callback([FromBody] PaymobCallbackDto dto)
         {
-            await _service.HandleCallbackAsync(data);
+            await _service.HandleCallbackAsync(dto);
             return Ok();
         }
     }

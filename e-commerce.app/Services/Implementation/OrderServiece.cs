@@ -130,21 +130,24 @@ namespace e_commerce.app.Services.Implementation
             decimal shippingCost = zone != null ? zone.ShippingCost : 0;
 
 
-
-
-            var discount = await _discountService.ApplyDiscountAsync(orderDto.DiscountCode, totalPrice);
-
             decimal discountAmount = 0;
-
-            if (discount.DiscountType == DiscountType.Percentage)
+            if (!string.IsNullOrWhiteSpace(orderDto.DiscountCode))
             {
-                discountAmount = totalPrice * (discount.Value / 100);
-            }
-            else
-            {
-                discountAmount = discount.Value;
-            }
+                var discount = await _discountService.ApplyDiscountAsync(orderDto.DiscountCode, totalPrice);
 
+              
+
+                if (discount.DiscountType == DiscountType.Percentage)
+                {
+                    discountAmount = totalPrice * (discount.Value / 100);
+                }
+                else
+                {
+                    discountAmount = discount.Value;
+                }
+
+               
+            }
             var finalAmount = totalPrice - discountAmount;
 
             // 6. نجهز المنتجات عشان تتنقل لجدول OrderDetails

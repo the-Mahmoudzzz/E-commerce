@@ -10,6 +10,6 @@ namespace e_commerce.app.Services.IServices
     public interface IPaymentService
     {
         Task<PaymentResponseDto> CreatePaymentAsync(CreatePaymentDto dto);
-        Task HandleCallbackAsync(dynamic data);
+        Task HandleCallbackAsync(PaymobCallbackDto data);
     }
 }
