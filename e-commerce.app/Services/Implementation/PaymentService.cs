@@ -67,10 +67,10 @@ public class PaymentService : IPaymentService
         };
     }
 
-    public async Task HandleCallbackAsync(dynamic data)
+    public async Task HandleCallbackAsync(PaymobCallbackDto data)
     {
-        bool success = data.obj.success;
-        int paymobOrderId = data.obj.order.id;
+        bool success = data.Obj.Success;
+        int paymobOrderId = data.Obj.Order.Id;
 
         var payment = await _repo.GetByTransactionRef(paymobOrderId.ToString());
 
