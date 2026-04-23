@@ -25,19 +25,23 @@ namespace e_commerce.app.Services.Implementation
         private readonly GetTokenServices _tokenService;
         private readonly SendEmailService _emailService;
         private readonly GoogleTokenValidator _googleTokenValidator;
+        private readonly IShoppingCartRepo _cartrepo;
 
         public AuthService(
             UserManager<User> userManager,
             IRefreshTokenRepository refreshRepo,
             GetTokenServices tokenService,
             SendEmailService emailService,
-            GoogleTokenValidator googleTokenValidator)
+            GoogleTokenValidator googleTokenValidator,
+            
+            IShoppingCartRepo cartrepo)
         {
             _userManager = userManager;
             _refreshRepo = refreshRepo;
             _tokenService = tokenService;
             _emailService = emailService;
             _googleTokenValidator = googleTokenValidator;
+            _cartrepo = cartrepo;
         }
 
         public async Task RegisterAsync(RegisterDTO dto, string baseUrl)
@@ -65,6 +69,8 @@ namespace e_commerce.app.Services.Implementation
             if (dto.UserRole == UserRole.User)
             {
                 user.IsApproved = true;
+                await _cartrepo.AddCatToUserAsync(user.Id);
+                
             }
 
             await _userManager.AddToRoleAsync(user, dto.UserRole.ToString());
@@ -171,7 +177,7 @@ namespace e_commerce.app.Services.Implementation
 
             await _refreshRepo.AddAsync(newRefreshToken);
 
-            var newAccessToken = _tokenService.GetToken(storedToken.User);
+            var newAccessToken = await _tokenService.GetToken(storedToken.User);
 
             return new AuthResponseDto
             {
@@ -251,7 +257,7 @@ namespace e_commerce.app.Services.Implementation
         
         private async Task<AuthResponseDto> BuildAuthResponseAsync(User user)
         {
-            var accessToken = _tokenService.GetToken(user);
+            var accessToken = await _tokenService.GetToken(user);
 
             var refreshToken = new RefreshToken
             {

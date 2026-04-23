@@ -1,3 +1,4 @@
+using e_commerce.core.Enum;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace e_commerce.core.entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeletedAt { get; set; } 
 
-        public DateTime? UpdateddAt { get; set; } 
+        public DateTime? UpdateddAt { get; set; }
         public ICollection<Product> Products { get; set; } = new List<Product>();
 
         

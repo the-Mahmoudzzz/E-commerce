@@ -1,12 +1,15 @@
 ﻿using e_commerce.app.Dto.ShippingCartDTO;
 using e_commerce.app.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace e_commerce.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles ="User")]
     public class ShoppingCartController : ControllerBase
     {
         private readonly IShoppingServiece _cartService;
@@ -16,27 +19,37 @@ namespace e_commerce.api.Controllers
             _cartService = cartService;
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<ShoppingCartDto>> GetBasketById(int id) // بنرجع DTO
+        [HttpGet("Basket")]
+        public async Task<ActionResult<ShoppingCartDto>> GetUserBasket()
+            
         {
+            int id= int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             var basketDto = await _cartService.GetCartAsync(id);
 
-            // لو السلة مش موجودة، بنكريتله سلة فاضية كـ DTO
             return Ok(basketDto ?? new ShoppingCartDto { Id = id });
         }
+        [HttpPost("add-item")]
+        public async Task<IActionResult> AddItemToUserCart(int productId, int quantity)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
 
+            await _cartService.AddItemsToCartAsync(userId, productId, quantity);
+
+            return Ok("Item added to cart");
+        }
         [HttpPut]
-        public async Task<ActionResult<ShoppingCartDto>> UpdateBasket(ShoppingCartDto basketDto) // بنستقبل وبنرجع DTO
+        public async Task<ActionResult<ShoppingCartDto>> UpdateBasket(UpdateCartDto basketDto) // بنستقبل وبنرجع DTO
         {
             // السيرفس دلوقتي هي اللي بتاخد الـ DTO وتعمل الـ Validation والمابينج وتكلم الداتا بيز
             var updatedBasket = await _cartService.UpdateCartAsync(basketDto);
             return Ok(updatedBasket);
         }
 
-        [HttpDelete("{id}")]
-        public async Task DeleteBasket(int id)
+        [HttpDelete]
+        public async Task DeleteBasketItems()
         {
-            await _cartService.DeleteCartAsync(id);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            await _cartService.DeleteCartItemsAsync(userId);
         }
     }
 }

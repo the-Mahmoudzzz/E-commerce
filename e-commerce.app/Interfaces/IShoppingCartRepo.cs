@@ -9,12 +9,10 @@ namespace e_commerce.app.Interfaces
 {
     public interface IShoppingCartRepo
     {
-        Task<ShopingCart?> GetCartAsync(int cartId);
-
-        
+        Task<ShopingCart?> GetUserCartAsync(int cartId);
+        Task AddCatToUserAsync(int customerid);
+        Task AddItemToCartAsync(int cartId, ShoppingCartItem item);
         Task<ShopingCart?> UpdateCartAsync(ShopingCart cart);
-
-        
-        Task<bool> DeleteCartAsync(int cartId);
+        Task<bool> DeleteCartItemsAsync(int userid);
     }
 }

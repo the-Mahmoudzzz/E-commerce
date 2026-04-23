@@ -57,6 +57,7 @@ namespace e_commerce.app.servieses.impelmentaion
                 .Where(p => p.IsApproved && p.IsActive)
                 .Select(p => new summaryProductDto
                 {
+                    Id=p.Id,
                     Name = p.Name,
                     Price = p.Price,
                     ImageUrl = p.ImageUrl,
@@ -74,6 +75,7 @@ namespace e_commerce.app.servieses.impelmentaion
             return product.Where(p=>p.IsApproved).Select(p => new summaryProductDto
             
             {
+                Id=p.Id,
                 Name = p.Name,
                 Price = p.Price,
                 ImageUrl = p.ImageUrl,

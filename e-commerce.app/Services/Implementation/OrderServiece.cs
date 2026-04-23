@@ -21,6 +21,7 @@ namespace e_commerce.app.Services.Implementation
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IShippingService _shippingService;
         private readonly IDiscountService _discountService;
+        private readonly INotificationService _notificationService;
 
 
 
@@ -32,7 +33,8 @@ namespace e_commerce.app.Services.Implementation
                 IHttpContextAccessor httpContextAccessor
 ,
                 IShippingService shippingService,
-                IDiscountService discountService)
+                IDiscountService discountService,
+                INotificationService notificationService)
         {
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
@@ -41,6 +43,7 @@ namespace e_commerce.app.Services.Implementation
             _httpContextAccessor = httpContextAccessor;
             _shippingService = shippingService;
             this._discountService = discountService;
+            _notificationService = notificationService;
         }
 
         public async Task CreateOrder(OrderCreateDto orderDto)
@@ -55,14 +58,14 @@ namespace e_commerce.app.Services.Implementation
             int userId = int.Parse(userIdClaim);
             // 1. نجيب السلة بالمنتجات بتاعتها
             // (بفترض إنك عامل ميثود GetCartAsync في الـ IShoppingCartRepo)
-            var cart = await _shoppingServiece.GetCartAsync(orderDto.CartId);
+            var cart = await _shoppingServiece.GetCartAsync(userId);
             if (cart == null || !cart.Items.Any())
                 throw new Exception("السلة فاضية أو غير موجودة");
             
 
             // 2. نحسب الإجمالي بتاع المنتجات
             decimal totalPrice = cart.Items.Sum(item => item.Price * item.Quantity);
-            Console.WriteLine(totalPrice);
+            
 
             // 3. نحسب تكلفة الشحن من جدول الـ ShippingZones
             var zone = await _shippingService.GetZoneAsync(orderDto.ShippingZoneId);
@@ -110,19 +113,32 @@ namespace e_commerce.app.Services.Implementation
 
             // 8. نحفظ الأوردر في الداتا بيز (الريبو بتاعك بيعمل SaveChanges جواه فمش محتاجين نعملها هنا)
             await _orderRepo.CreateOrderAsync(order);
+            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto
+            {
+                Message = $"Your oreder  {order.Id} is Confiremed",
+                UserId = userId,
+                Title = "Order Is Confiermed",
+            }
+           );
 
-            // 9. نمسح السلة عشان العميل ميطلبهاش تاني بالغلط
-            await _cartRepo.DeleteCartAsync(cart.Id);
+            await _cartRepo.DeleteCartItemsAsync(userId);
         }
 
         public async Task<IEnumerable<OrderDTO>> GetIncomingOrder()
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?
              .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var odrders = await _orderRepo.GetIncomingOrder((int.Parse(userIdClaim)))
-                ;
+            var odrders = await _orderRepo.GetIncomingOrder((int.Parse(userIdClaim)));
 
-           return _mapper.Map<IEnumerable<OrderDTO>>(odrders);
+            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto
+            {
+                Message = $"Your have incoming oreder checkout",
+                UserId = int.Parse (userIdClaim),
+                Title = "Order Is Confiermed"
+            }
+           );
+
+            return _mapper.Map<IEnumerable<OrderDTO>>(odrders);
             
         }
 
