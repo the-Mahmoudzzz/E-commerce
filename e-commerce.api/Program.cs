@@ -158,6 +158,8 @@ namespace e_commerce.api
             builder.Services.AddScoped<ISellerRepository, SellerRepository>();
             builder.Services.AddHttpContextAccessor();
 
+            builder.Services.AddScoped<IAdminService, AdminService>();
+
             var app = builder.Build();
             //            using (var scope = app.Services.CreateScope())
             //{

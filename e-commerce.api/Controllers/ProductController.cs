@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using e_commerce.app.servieses.iserviese;
-using e_commerce.app.Dto;
+using e_commerce.app.Dto.ProductDto;
 
 namespace e_commerce.api.Controllers
 {
@@ -8,15 +8,12 @@ namespace e_commerce.api.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-
-
         private readonly IProductService _productService;
 
         public ProductController(IProductService productService)
         {
             _productService = productService;
         }
-
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -31,7 +28,6 @@ namespace e_commerce.api.Controllers
                 return NotFound(ex.Message);
             }
         }
-
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -55,6 +51,7 @@ namespace e_commerce.api.Controllers
             await _productService.AddProductAsync(dto, sellerId);
             return Ok("Product created and waiting for approval");
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(
             int id,
@@ -70,6 +67,7 @@ namespace e_commerce.api.Controllers
                 return NotFound(ex.Message);
             }
         }
+
         [HttpPut("approve/{id}")]
         public async Task<IActionResult> ApproveProduct(
             int id,
@@ -85,6 +83,7 @@ namespace e_commerce.api.Controllers
                 return NotFound(ex.Message);
             }
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -98,30 +97,47 @@ namespace e_commerce.api.Controllers
                 return NotFound(ex.Message);
             }
         }
+
+        // --- Endpoints الخاصة ببرانش محمود دياب ---
+
         [HttpPut("{id}/stock")]
         public async Task<IActionResult> UpdateStock(int id, int quantity)
         {
-            await _productService.UpdateStockAsync(id, quantity);
-            return NoContent();
+            try
+            {
+                await _productService.UpdateStockAsync(id, quantity);
+                return Ok("Stock updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
         [HttpGet("{id}/stock")]
         public async Task<IActionResult> CheckStock(int id)
         {
-            var product = await _productService.GetByIdAsync(id);
-            return Ok(new
+            try
             {
-                id = product.Id,
-                name = product.Name,
-                quantity = product.Quantity
-            });
+                var product = await _productService.GetByIdAsync(id);
+                return Ok(new
+                {
+                    id = product.Id,
+                    name = product.Name,
+                    quantity = product.Quantity
+                });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
         [HttpGet("low-stock")]
         public async Task<IActionResult> LowStock(int threshold = 5)
         {
             var result = await _productService.GetLowStockAsync(threshold);
             return Ok(result);
         }
-
-
     }
 }
