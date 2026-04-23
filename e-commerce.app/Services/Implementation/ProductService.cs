@@ -102,11 +102,16 @@ namespace e_commerce.app.servieses.impelmentaion
             };
             await _productRepository.AddAsync(product);
         }
-        public async Task UpdateProductAsync(int id, UpdateProductBySellerDto dto)
+        public async Task UpdateProductAsync(int id, UpdateProductBySellerDto dto, int currentSellerId)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
                 throw new Exception("Product not found");
+
+            if (product.SellerId != currentSellerId)
+                throw new Exception("You are not authorized to update this product.");
+
+
             if (!string.IsNullOrEmpty(dto.Name))
                 product.Name = dto.Name;
             if (!string.IsNullOrEmpty(dto.Description))
@@ -141,21 +146,25 @@ namespace e_commerce.app.servieses.impelmentaion
 
 
 
-        public async Task DeleteProductAsync(int id)
+
+
+        public async Task DeleteProductAsync(int id, int currentSellerId)
         {
             var product = await _productRepository.GetByIdAsync(id);
+            if (product == null) throw new Exception("Product not found");
 
-            if (product == null)
-                throw new Exception("Product not found");
+          
+            if (product.SellerId != currentSellerId)
+                throw new Exception("You are not authorized to delete this product.");
 
             await _productRepository.DeleteAsync(id);
         }
         public async Task<(IEnumerable<summaryProductDto> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams)
         {
-            // هنا بنكلم الـ Repository يجيب الداتا متفلترة وجاهزة من الداتابيز
+            
             var result = await _productRepository.SearchAsync(searchParams);
 
-            // بنعمل Mapping للـ Data عشان نرجعها في شكل summaryProductDto
+            
             var mappedProducts = result.Products.Select(p => new summaryProductDto
             {
                 Name = p.Name,
