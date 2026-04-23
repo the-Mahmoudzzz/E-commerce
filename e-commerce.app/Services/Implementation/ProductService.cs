@@ -92,12 +92,15 @@ namespace e_commerce.app.servieses.impelmentaion
             };
             await _productRepository.AddAsync(product);
         }
-
-        public async Task UpdateProductAsync(int id, UpdateProductBySellerDto dto)
+        public async Task UpdateProductAsync(int id, UpdateProductBySellerDto dto, int currentSellerId)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
                 throw new Exception("Product not found");
+
+            if (product.SellerId != currentSellerId)
+                throw new Exception("You are not authorized to update this product.");
+
 
             if (!string.IsNullOrEmpty(dto.Name))
                 product.Name = dto.Name;
@@ -130,33 +133,29 @@ namespace e_commerce.app.servieses.impelmentaion
             await _productRepository.UpdateAsync(product);
         }
 
-        public async Task DeleteProductAsync(int id)
+
+
+
+
+        public async Task DeleteProductAsync(int id, int currentSellerId)
         {
             var product = await _productRepository.GetByIdAsync(id);
+            if (product == null) throw new Exception("Product not found");
 
-            if (product == null)
-                throw new Exception("Product not found");
+          
+            if (product.SellerId != currentSellerId)
+                throw new Exception("You are not authorized to delete this product.");
 
             await _productRepository.DeleteAsync(id);
         }
 
         public async Task UpdateStockAsync(int id, int quantity)
         {
-            var product = await _productRepository.GetByIdAsync(id);
+            
+            var result = await _productRepository.SearchAsync(searchParams);
 
-            if (product == null)
-                throw new Exception("Product not found");
-
-            product.Quantity = quantity;
-
-            await _productRepository.UpdateAsync(product);
-        }
-
-        public async Task<IEnumerable<summaryProductDto>> GetLowStockAsync(int threshold)
-        {
-            var products = await _productRepository.GetLowStockAsync(threshold);
-
-            return products.Select(p => new summaryProductDto
+            
+            var mappedProducts = result.Products.Select(p => new summaryProductDto
             {
                 Id = p.Id,
                 Name = p.Name,
