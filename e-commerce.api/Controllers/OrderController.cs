@@ -1,8 +1,10 @@
 ﻿using e_commerce.app.Dto.OrderDto;
 using e_commerce.app.Services.IServices;
+using e_commerce.core.entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace e_commerce.api.Controllers
 {
@@ -17,41 +19,63 @@ namespace e_commerce.api.Controllers
             _orderService = orderService;
         }
 
-      
+
         [HttpPost]
+        [Authorize (Roles ="User,Customer")]
         public async Task<IActionResult> CreateOrder(OrderCreateDto orderDto)
         {
             await _orderService.CreateOrder(orderDto);
             return Ok(new { message = "Order Created Successfully" });
         }
 
-        [HttpGet("customer/{customerId}")]
-        public async Task<ActionResult<IReadOnlyList<OrderDTO>>> GetOrdersByCustomer(int customerId)
+        [HttpGet("customer")]
+        [Authorize(Roles = "User,Customer")]
+        public async Task<ActionResult<IReadOnlyList<OrderDTO>>> GetOrdersByCustomer()
         {
-            var orders = await _orderService.GetOrderByCustomerId(customerId);
+            int customerid = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            var orders = await _orderService.GetOrderByCustomerId(customerid);
+
             return Ok(orders);
         }
 
         [HttpGet("{orderId}")]
+        [Authorize (Roles ="Admin")]
         public async Task<ActionResult<OrderDTO>> GetOrderById(int orderId)
         {
             var order = await _orderService.GetOrderById(orderId);
 
             if (order == null)
-                return NotFound();
-
+                return NotFound("No Order Found");
+            
             return Ok(order);
         }
-        [Authorize(Roles ="Seller")]
+        [Authorize(Roles = "Seller")]
         [HttpGet("seller")]
         public async Task<ActionResult<OrderDTO>> GetSellerOrder()
         {
             var order = await _orderService.GetIncomingOrder();
 
             if (order == null)
-                return NotFound();
+                return NotFound("No Order Yet");
 
             return Ok(order);
+        }
+
+        [HttpPut("CancedlOrder")]
+        [Authorize(Roles ="User,Customer")]
+        public async Task<IActionResult> CancelOrder (int orderid)
+        {
+            int customerid = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            try
+            {
+                await _orderService.CancelOrder(customerid,orderid);
+            }
+            catch (Exception ex) { 
+                return BadRequest(ex.Message);
+            }
+           
+
+            return Ok("Order is Canceld");
         }
 
     }

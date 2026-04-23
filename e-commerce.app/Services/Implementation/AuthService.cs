@@ -1,4 +1,5 @@
 ﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.UserDTO;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.ExternalService;
 using e_commerce.app.Services.IServices;

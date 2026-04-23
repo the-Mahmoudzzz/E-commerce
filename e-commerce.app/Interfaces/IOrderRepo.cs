@@ -15,5 +15,7 @@ namespace e_commerce.app.Interfaces
        Task<IReadOnlyList<Order>> GetOrderByUser(int Customerid);
         Task UpdateOrder(Order order);
         Task<IEnumerable<Order>> GetIncomingOrder(int sellerid);
+        Task<int> GetCountOrder();
+        Task<decimal> GetTotalCount();
     }
 }

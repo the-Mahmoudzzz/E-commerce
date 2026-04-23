@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 
-namespace Web.App.DTOs
+namespace e_commerce.app.Dto.UserDTO
 {
     public class RegisterDTO
     {
