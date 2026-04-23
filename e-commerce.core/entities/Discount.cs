@@ -1,4 +1,5 @@
-﻿using System;
+﻿using e_commerce.core.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace e_commerce.core.entities
         public int Id { get; set; }
         [Required]
         public string Code { get; set; } = string.Empty;
-        public String DiscountType { get; set; }
+        public DiscountType DiscountType { get; set; }
         public decimal Value { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime EndDate { get; set; }

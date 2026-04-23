@@ -1,4 +1,5 @@
-﻿using e_commerce.app.interfaces;
+using e_commerce.app.Dto.ProductDto;
+using e_commerce.app.interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace e_commerce.infra.reposatory
         {
             _context = context;
         }
+
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _context.products
@@ -69,6 +71,7 @@ namespace e_commerce.infra.reposatory
                 .Where(p => p.SellerId == sellerId)
                 .ToListAsync();
         }
+
         public async Task<IReadOnlyList<Product>> GetProductsByIdsAsync(IEnumerable<int> productIds)
         {
             return await _context.products
@@ -76,5 +79,13 @@ namespace e_commerce.infra.reposatory
                 .ToListAsync();
         }
 
+        // ميثود برانشك (Diab_Bransh)
+        public async Task<IEnumerable<Product>> GetLowStockAsync(int threshold)
+        {
+            return await _context.products
+                .Include(p => p.Category)
+                .Where(p => p.Quantity <= threshold)
+                .ToListAsync();
+        }
     }
 }
