@@ -2,13 +2,9 @@
 using e_commerce.app.Dto.SellerDTO;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
+using e_commerce.core.Exceptions;          // ← ضيف ده
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -25,11 +21,16 @@ namespace e_commerce.app.Services.Implementation
             _httpContextAccessor = httpContextAccessor;
         }
 
+        // ✅ Helper — نفس pattern الـ OrderService
         private int GetCurrentSellerId()
         {
-            var user = _httpContextAccessor.HttpContext.User;
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            return int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new AuthenticationException("Seller is not authenticated.");
+
+            return int.Parse(userIdClaim);
         }
 
         public async Task<SellerDashboardDto> GetDashboardAsync()
@@ -39,7 +40,8 @@ namespace e_commerce.app.Services.Implementation
             var orders = await _sellerRepo.GetSellerOrdersAsync(sellerId);
             var items = await _sellerRepo.GetSellerOrderDetailsAsync(sellerId);
 
-            var totalRevenue = orders.Sum(o => o.FinalAmount);
+            // ✅ مش error لو مفيش أوردرات — بس نرجع zeros
+            var totalRevenue = orders.Any() ? orders.Sum(o => o.FinalAmount) : 0;
             var totalOrders = orders.Count;
 
             var topProducts = items
@@ -77,11 +79,9 @@ namespace e_commerce.app.Services.Implementation
 
             return new SellerEarningsDto
             {
-                TotalEarnings = transactions.Sum(x => x.Amount),
+                TotalEarnings = transactions.Any() ? transactions.Sum(x => x.Amount) : 0,
                 Transactions = transactions
             };
         }
-
-      
     }
 }

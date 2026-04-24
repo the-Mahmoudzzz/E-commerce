@@ -1,5 +1,6 @@
 ﻿using e_commerce.app.Dto.ProductReviewDTO;
 using e_commerce.app.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,7 @@ namespace e_commerce.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductReviewController : ControllerBase
     {
         private readonly IReviewProductService _reviewProductService;

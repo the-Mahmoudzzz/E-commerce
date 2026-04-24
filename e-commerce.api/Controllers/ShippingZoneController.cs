@@ -1,5 +1,6 @@
 ﻿using e_commerce.app.Dto.ZondeDTO;
 using e_commerce.app.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ namespace e_commerce.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ShippingZoneController : ControllerBase
     {
         private readonly IShippingService _shippingService;
@@ -30,6 +32,7 @@ namespace e_commerce.api.Controllers
            
         }
         [HttpPost]
+        [Authorize(Roles ="Admin")]
         public async Task<IActionResult> AddZone(ShippingZoneDto zoneDto)
         {
             await _shippingService.AddZoneAsync(zoneDto);

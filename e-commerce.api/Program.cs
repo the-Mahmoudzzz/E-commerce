@@ -1,4 +1,5 @@
 using AutoMapper;
+using e_commerce.api.Middleware;
 using e_commerce.app.External;
 using e_commerce.app.interfaces;
 using e_commerce.app.Interfaces;
@@ -172,6 +173,8 @@ namespace e_commerce.api
             //    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             //    db.Database.Migrate();
             //}
+            app.UseGlobalExceptionHandler();
+
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto

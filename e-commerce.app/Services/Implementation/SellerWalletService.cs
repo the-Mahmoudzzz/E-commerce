@@ -2,11 +2,7 @@
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using e_commerce.core.Exceptions;          // ← ضيف ده
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -22,9 +18,8 @@ namespace e_commerce.app.Services.Implementation
         public async Task<SellerWalletDto> GetWalletAsync(int sellerId)
         {
             var wallet = await _repo.GetBySellerIdAsync(sellerId);
-
             if (wallet == null)
-                throw new Exception("Wallet not found");
+                throw new NotFoundException("Wallet", sellerId);
 
             return new SellerWalletDto
             {
@@ -38,25 +33,27 @@ namespace e_commerce.app.Services.Implementation
         public async Task CreateWalletIfNotExists(int sellerId)
         {
             var wallet = await _repo.GetBySellerIdAsync(sellerId);
-
-            if (wallet != null) return;
+            if (wallet != null) return;  // ✅ موجودة أصلاً — مش error
 
             await _repo.AddAsync(new SellerWallet
             {
                 SellerId = sellerId,
                 Balance = 0,
                 PendingBalance = 0,
-                LifeTimeEarnings = 0
+                LifeTimeEarnings = 0,
+                LastUpdated = DateTime.UtcNow
             });
         }
 
-     
         public async Task AddPendingBalance(int sellerId, decimal amount)
         {
-            var wallet = await _repo.GetBySellerIdAsync(sellerId);
+            // ✅ Validate amount
+            if (amount <= 0)
+                throw new ValidationException("Amount", "Amount must be greater than zero.");
 
+            var wallet = await _repo.GetBySellerIdAsync(sellerId);
             if (wallet == null)
-                throw new Exception("Wallet not found");
+                throw new NotFoundException("Wallet", sellerId);
 
             wallet.PendingBalance += amount;
             wallet.LastUpdated = DateTime.UtcNow;
@@ -64,16 +61,19 @@ namespace e_commerce.app.Services.Implementation
             await _repo.UpdateAsync(wallet);
         }
 
-      
         public async Task ConfirmPayment(int sellerId, decimal amount)
         {
+            if (amount <= 0)
+                throw new ValidationException("Amount", "Amount must be greater than zero.");
+
             var wallet = await _repo.GetBySellerIdAsync(sellerId);
-
             if (wallet == null)
-                throw new Exception("Wallet not found");
+                throw new NotFoundException("Wallet", sellerId);
 
+            // ✅ Pending balance أقل من المبلغ — data inconsistency
             if (wallet.PendingBalance < amount)
-                throw new Exception("Invalid pending amount");
+                throw new BusinessRuleException(
+                    $"Pending balance ({wallet.PendingBalance:C}) is less than the amount to confirm ({amount:C}).");
 
             wallet.PendingBalance -= amount;
             wallet.Balance += amount;
@@ -83,16 +83,18 @@ namespace e_commerce.app.Services.Implementation
             await _repo.UpdateAsync(wallet);
         }
 
-   
         public async Task DeductForWithdrawal(int sellerId, decimal amount)
         {
-            var wallet = await _repo.GetBySellerIdAsync(sellerId);
+            if (amount <= 0)
+                throw new ValidationException("Amount", "Amount must be greater than zero.");
 
+            var wallet = await _repo.GetBySellerIdAsync(sellerId);
             if (wallet == null)
-                throw new Exception("Wallet not found");
+                throw new NotFoundException("Wallet", sellerId);
 
             if (wallet.Balance < amount)
-                throw new Exception("Insufficient balance");
+                throw new BusinessRuleException(
+                    $"Insufficient balance. Available: {wallet.Balance:C}, Requested: {amount:C}.");
 
             wallet.Balance -= amount;
             wallet.LastUpdated = DateTime.UtcNow;

@@ -42,6 +42,7 @@ namespace e_commerce.api.Controllers
             return Ok(category);
         }
         [HttpPost]
+        [Authorize("Admin")]
         public async Task<IActionResult> Create(CreateCategoryDto category) { 
             if(!ModelState.IsValid)
             {
@@ -51,6 +52,7 @@ namespace e_commerce.api.Controllers
             return Created();
         }
         [HttpPost("sub")]
+        [Authorize("Admin")]
         public async Task<IActionResult> CreateSub(CreateSubCategoryDto category)
         {
             if (!ModelState.IsValid)
@@ -61,6 +63,7 @@ namespace e_commerce.api.Controllers
             return Created();
         }
         [HttpPut]
+        [Authorize("Admin")]
         public async Task<IActionResult> Edit(CreateCategoryDto createCategoryDto) {
             if (!ModelState.IsValid)
             {
@@ -71,6 +74,7 @@ namespace e_commerce.api.Controllers
 
         }
         [HttpPut("sub")]
+        [Authorize("Admin")]
         public async Task<IActionResult> EditSub(CreateSubCategoryDto createCategoryDto)
         {
             if (!ModelState.IsValid)
@@ -82,6 +86,7 @@ namespace e_commerce.api.Controllers
 
         }
         [HttpDelete]
+        [Authorize("Admin")]
         public IActionResult Delete(int id) {
             categoryService.DeleteAsync(id);
             return Ok();

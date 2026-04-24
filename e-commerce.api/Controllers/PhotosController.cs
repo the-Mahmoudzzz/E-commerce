@@ -1,4 +1,5 @@
 ﻿using e_commerce.app.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,6 +20,7 @@ namespace e_commerce.api.Controllers
 
         // POST: api/photos/upload
         [HttpPost("upload")]
+        [Authorize (Roles ="Admin,Seller")]
         public async Task<IActionResult> UploadPhoto(IFormFile file)
         {
             try
@@ -42,6 +44,7 @@ namespace e_commerce.api.Controllers
 
         // DELETE: api/photos/delete/{publicId}
         [HttpDelete("delete/{publicId}")]
+        [Authorize(Roles = "Admin,Seller")]
         public async Task<IActionResult> DeletePhoto(string publicId)
         {
             try

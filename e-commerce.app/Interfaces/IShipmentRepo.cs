@@ -13,5 +13,6 @@ namespace e_commerce.app.Interfaces
         Task AddAsync(Shipment shipment);
         void Update(Shipment shipment);
         Task SaveChangesAsync();
+        Task<Shipment> GetByOrderIdAsync(int orderId);
     }
 }

@@ -2,10 +2,7 @@ using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.interfaces;
 using e_commerce.app.servieses.iserviese;
 using e_commerce.core.entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using e_commerce.core.Exceptions;          // ? ??? ??
 
 namespace e_commerce.app.servieses.impelmentaion
 {
@@ -23,7 +20,7 @@ namespace e_commerce.app.servieses.impelmentaion
             var product = await _productRepository.GetByIdAsync(id);
 
             if (product == null)
-                throw new Exception("Product not found");
+                throw new NotFoundException("Product", id);
 
             return new ProductDto
             {
@@ -62,9 +59,9 @@ namespace e_commerce.app.servieses.impelmentaion
 
         public async Task<IEnumerable<summaryProductDto>> GetBySellerAsync(int sellerId)
         {
-            var product = await _productRepository.GetBySellerAsync(sellerId);
+            var products = await _productRepository.GetBySellerAsync(sellerId);
 
-            return product.Where(p => p.IsApproved).Select(p => new summaryProductDto
+            return products.Where(p => p.IsApproved).Select(p => new summaryProductDto
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -77,6 +74,13 @@ namespace e_commerce.app.servieses.impelmentaion
 
         public async Task AddProductAsync(CreateProductBySellerDto dto, int sellerId)
         {
+            // ? Validate price and quantity
+            if (dto.Price <= 0)
+                throw new ValidationException("Price", "Price must be greater than zero.");
+
+            if (dto.Quantity < 0)
+                throw new ValidationException("Quantity", "Quantity cannot be negative.");
+
             var product = new Product
             {
                 Name = dto.Name,
@@ -90,17 +94,26 @@ namespace e_commerce.app.servieses.impelmentaion
                 IsApproved = false,
                 CreatedAt = DateTime.UtcNow
             };
+
             await _productRepository.AddAsync(product);
         }
+
         public async Task UpdateProductAsync(int id, UpdateProductBySellerDto dto, int currentSellerId)
         {
             var product = await _productRepository.GetByIdAsync(id);
+
             if (product == null)
-                throw new Exception("Product not found");
+                throw new NotFoundException("Product", id);
 
             if (product.SellerId != currentSellerId)
-                throw new Exception("You are not authorized to update this product.");
+                throw new UnauthorizedException("You are not authorized to update this product.");
 
+            // ? Validate new values if provided
+            if (dto.Price.HasValue && dto.Price.Value <= 0)
+                throw new ValidationException("Price", "Price must be greater than zero.");
+
+            if (dto.Quantity.HasValue && dto.Quantity.Value < 0)
+                throw new ValidationException("Quantity", "Quantity cannot be negative.");
 
             if (!string.IsNullOrEmpty(dto.Name))
                 product.Name = dto.Name;
@@ -115,8 +128,10 @@ namespace e_commerce.app.servieses.impelmentaion
             if (dto.CategoryId.HasValue)
                 product.CategoryId = dto.CategoryId.Value;
 
+            // ??? ??????? ????? ??? Admin ???? ???? ????????
             product.IsApproved = false;
             product.IsActive = false;
+
             await _productRepository.UpdateAsync(product);
         }
 
@@ -125,7 +140,7 @@ namespace e_commerce.app.servieses.impelmentaion
             var product = await _productRepository.GetByIdAsync(id);
 
             if (product == null)
-                throw new Exception("Product not found");
+                throw new NotFoundException("Product", id);
 
             product.IsApproved = dto.IsApproved;
             product.IsActive = dto.IsActive;
@@ -133,18 +148,15 @@ namespace e_commerce.app.servieses.impelmentaion
             await _productRepository.UpdateAsync(product);
         }
 
-
-
-
-
         public async Task DeleteProductAsync(int id, int currentSellerId)
         {
             var product = await _productRepository.GetByIdAsync(id);
-            if (product == null) throw new Exception("Product not found");
 
-          
+            if (product == null)
+                throw new NotFoundException("Product", id);
+
             if (product.SellerId != currentSellerId)
-                throw new Exception("You are not authorized to delete this product.");
+                throw new UnauthorizedException("You are not authorized to delete this product.");
 
             await _productRepository.DeleteAsync(id);
         }
@@ -154,7 +166,10 @@ namespace e_commerce.app.servieses.impelmentaion
             var product = await _productRepository.GetByIdAsync(id);
 
             if (product == null)
-                throw new Exception("Product not found");
+                throw new NotFoundException("Product", id);
+
+            if (quantity < 0)
+                throw new ValidationException("Quantity", "Stock quantity cannot be negative.");
 
             product.Quantity = quantity;
 
@@ -163,12 +178,11 @@ namespace e_commerce.app.servieses.impelmentaion
 
         public async Task<(IEnumerable<summaryProductDto> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams)
         {
-            
-
             var result = await _productRepository.SearchAsync(searchParams);
 
             var mappedProducts = result.Products.Select(p => new summaryProductDto
             {
+                Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
                 ImageUrl = p.ImageUrl,
@@ -181,6 +195,9 @@ namespace e_commerce.app.servieses.impelmentaion
 
         public async Task<IEnumerable<summaryProductDto>> GetLowStockAsync(int threshold)
         {
+            if (threshold < 0)
+                throw new ValidationException("Threshold", "Threshold cannot be negative.");
+
             var products = await _productRepository.GetLowStockAsync(threshold);
 
             return products.Select(p => new summaryProductDto

@@ -6,14 +6,9 @@ using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
 using e_commerce.core.Enum;
+using e_commerce.core.Exceptions;          // ← ضيف ده
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+using System.Security.Claims;
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -29,19 +24,16 @@ namespace e_commerce.app.Services.Implementation
         private readonly INotificationService _notificationService;
         private readonly IProductRepository _productRepository;
 
-
-
         public OrderServiece(
             IOrderRepo orderRepo,
             IShoppingCartRepo cartRepo,
             IMapper mapper,
             IShoppingServiece shoppingServiece,
-                IHttpContextAccessor httpContextAccessor
-,
-                IShippingService shippingService,
-                IDiscountService discountService,
-                INotificationService notificationService,
-                IProductRepository productRepository)
+            IHttpContextAccessor httpContextAccessor,
+            IShippingService shippingService,
+            IDiscountService discountService,
+            INotificationService notificationService,
+            IProductRepository productRepository)
         {
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
@@ -49,120 +41,78 @@ namespace e_commerce.app.Services.Implementation
             _shoppingServiece = shoppingServiece;
             _httpContextAccessor = httpContextAccessor;
             _shippingService = shippingService;
-            this._discountService = discountService;
+            _discountService = discountService;
             _notificationService = notificationService;
             _productRepository = productRepository;
         }
 
-        public async Task CancelOrder(int customerid,int orderid)
+        // ✅ Helper مشترك عشان نجيب الـ userId من الـ Token في أي مكان
+        private int GetCurrentUserId()
         {
-            var existorder = await _orderRepo.GetOrderById(orderid);
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (existorder == null)
-                throw new Exception("Order not found");
-            if (customerid != existorder.CustomerId)
-            {
-                throw new Exception("Order not found");
-            }
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new AuthenticationException("User is not authenticated.");
 
-            if (existorder.Status != OrderStatus.Pending)
-                throw new Exception("Order cannot be canceled");
-            
-
-            existorder.Status = OrderStatus.Canceled;
-
-            foreach (var item in existorder.OrderDetails)
-            {
-                item.Status = OrderStatus.Canceled;
-                if (item.Product != null)
-                {
-                    item.Product.Quantity += item.Quantity;
-                }
-            }
-
-            var sellerIds = existorder.OrderDetails
-                .Select(i => i.Product.SellerId)
-                .Distinct();
-
-            foreach (var sellerId in sellerIds)
-            {
-                await _notificationService.AddNotifiAsync(new CreateNotificationDto
-                {
-                    UserId = sellerId,
-                    Title = "Order Canceled",
-                    Message = $"Order #{existorder.Id} has been canceled"
-                });
-            }
-
-            await _notificationService.AddNotifiAsync(new CreateNotificationDto
-            {
-                UserId = existorder.CustomerId,
-                Title = "Order Canceled",
-                Message = $"Your order #{existorder.Id} has been canceled successfully"
-            });
-
-            await _orderRepo.UpdateOrder(existorder);
+            return int.Parse(userIdClaim);
         }
 
         public async Task CreateOrder(OrderCreateDto orderDto)
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?
-             .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            int userId = GetCurrentUserId();
 
-            if (string.IsNullOrEmpty(userIdClaim))
-                throw new Exception("User not authenticated");
-
-
-            int userId = int.Parse(userIdClaim);
-            // 1. نجيب السلة بالمنتجات بتاعتها
-            // (بفترض إنك عامل ميثود GetCartAsync في الـ IShoppingCartRepo)
+            // ✅ السلة فاضية
             var cart = await _shoppingServiece.GetCartAsync(userId);
             if (cart == null || !cart.Items.Any())
-                throw new Exception("السلة فاضية أو غير موجودة");
-            
+                throw new BusinessRuleException("Your cart is empty. Add items before placing an order.");
 
-            // 2. نحسب الإجمالي بتاع المنتجات
+            // ✅ Stock check لكل منتج
+            foreach (var item in cart.Items)
+            {
+                var product = await _productRepository.GetByIdAsync(item.ProductId);
+                if (product == null)
+                    throw new NotFoundException("Product", item.ProductId);
+
+                if (product.Quantity < item.Quantity)
+                    throw new BusinessRuleException(
+                        $"'{product.Name}' has only {product.Quantity} units available, but you requested {item.Quantity}.");
+            }
+
+            // حساب الإجمالي
             decimal totalPrice = cart.Items.Sum(item => item.Price * item.Quantity);
-            
 
-            // 3. نحسب تكلفة الشحن من جدول الـ ShippingZones
+            // ✅ Shipping zone مش موجودة
             var zone = await _shippingService.GetZoneAsync(orderDto.ShippingZoneId);
-            decimal shippingCost = zone != null ? zone.ShippingCost : 0;
+            if (zone == null)
+                throw new NotFoundException("ShippingZone", orderDto.ShippingZoneId);
 
+            decimal shippingCost = zone.ShippingCost;
 
+            // تطبيق الكوبون لو موجود
             decimal discountAmount = 0;
             if (!string.IsNullOrWhiteSpace(orderDto.DiscountCode))
             {
+                // ✅ ApplyDiscountAsync هتعمل throw لو الكوبون غلط أو منتهي
                 var discount = await _discountService.ApplyDiscountAsync(orderDto.DiscountCode, totalPrice);
 
-              
-
-                if (discount.DiscountType == DiscountType.Percentage)
-                {
-                    discountAmount = totalPrice * (discount.Value / 100);
-                }
-                else
-                {
-                    discountAmount = discount.Value;
-                }
-
-               
+                discountAmount = discount.DiscountType == DiscountType.Percentage
+                    ? totalPrice * (discount.Value / 100)
+                    : discount.Value;
             }
-            var finalAmount = totalPrice - discountAmount;
 
-            // 6. نجهز المنتجات عشان تتنقل لجدول OrderDetails
+            decimal finalAmount = totalPrice - discountAmount + shippingCost;
+
             var orderDetails = cart.Items.Select(item => new OrderDetail
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 PriceAtTime = item.Price,
-                Status = OrderStatus.Pending // الحالة الافتراضية
+                Status = OrderStatus.Pending
             }).ToList();
 
-            // 7. نكريت الـ Order Entity الأساسية
             var order = new Order
             {
-                // ملاحظة: تأكد إن الـ OrderCreateDto فيه CustomerId، أو بتجيبه من التوكن
                 CustomerId = userId,
                 TotalPrice = totalPrice,
                 ShippingCost = shippingCost,
@@ -173,59 +123,100 @@ namespace e_commerce.app.Services.Implementation
                 OrderDetails = orderDetails
             };
 
-            // 8. نحفظ الأوردر في الداتا بيز (الريبو بتاعك بيعمل SaveChanges جواه فمش محتاجين نعملها هنا)
             await _orderRepo.CreateOrderAsync(order);
-            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto
+
+            await _notificationService.AddNotifiAsync(new CreateNotificationDto
             {
-                Message = $"Your oreder  {order.Id} is Confiremed",
                 UserId = userId,
-                Title = "Order Is Confiermed",
-            }
-           );
+                Title = "Order Confirmed",
+                Message = $"Your order #{order.Id} has been placed successfully."
+            });
 
             await _cartRepo.DeleteCartItemsAsync(userId);
         }
 
-        public async Task<IEnumerable<OrderDTO>> GetIncomingOrder()
+        public async Task CancelOrder(int customerId, int orderId)
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?
-             .FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var odrders = await _orderRepo.GetIncomingOrder((int.Parse(userIdClaim)));
+            var order = await _orderRepo.GetOrderById(orderId);
 
-            await _notificationService.AddNotifiAsync(new Dto.NotificationDto.CreateNotificationDto
+            // ✅ Order مش موجود
+            if (order == null)
+                throw new NotFoundException("Order", orderId);
+
+            // ✅ الأوردر مش بتاع الكاستمر ده
+            if (order.CustomerId != customerId)
+                throw new UnauthorizedException("You are not authorized to cancel this order.");
+
+            // ✅ مش في حالة Pending
+            if (order.Status != OrderStatus.Pending)
+                throw new BusinessRuleException("Only pending orders can be canceled.");
+
+            order.Status = OrderStatus.Canceled;
+
+            foreach (var item in order.OrderDetails)
             {
-                Message = $"Your have incoming oreder checkout",
-                UserId = int.Parse (userIdClaim),
-                Title = "Order Is Confiermed"
-            }
-           );
+                item.Status = OrderStatus.Canceled;
 
-            return _mapper.Map<IEnumerable<OrderDTO>>(odrders);
-            
+                // رجّع المخزون
+                if (item.Product != null)
+                    item.Product.Quantity += item.Quantity;
+            }
+
+            // إبعت نوتيفيكيشن للسيلر/ز
+            var sellerIds = order.OrderDetails
+                .Select(i => i.Product.SellerId)
+                .Distinct();
+
+            foreach (var sellerId in sellerIds)
+            {
+                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                {
+                    UserId = sellerId,
+                    Title = "Order Canceled",
+                    Message = $"Order #{order.Id} has been canceled by the customer."
+                });
+            }
+
+            // إبعت نوتيفيكيشن للكاستمر
+            await _notificationService.AddNotifiAsync(new CreateNotificationDto
+            {
+                UserId = customerId,
+                Title = "Order Canceled",
+                Message = $"Your order #{order.Id} has been canceled successfully."
+            });
+
+            await _orderRepo.UpdateOrder(order);
         }
 
-        public async Task<IReadOnlyList<OrderDTO>> GetOrderByCustomerId(int customeid)
+        public async Task<IReadOnlyList<OrderDTO>> GetOrderByCustomerId(int customerId)
         {
-            // بنجيب الداتا من الريبو
-            var orders = await _orderRepo.GetOrderByUser(customeid);
-            if (orders == null)
-                throw new Exception("No Order Yet");
-            // بنحولها لـ DTO عشان نعرضها للـ Frontend
-           
+            var orders = await _orderRepo.GetOrderByUser(customerId);
+
+            // ✅ مش error إن مفيش أوردرات — بس نرجع list فاضية
+            if (orders == null || !orders.Any())
+                return new List<OrderDTO>();
+
             return _mapper.Map<IReadOnlyList<OrderDTO>>(orders);
         }
 
-        public async Task<OrderDTO> GetOrderById(int orderid)
+        public async Task<OrderDTO> GetOrderById(int orderId)
         {
-            // بنجيب الأوردر بالـ Includes اللي إنت كاتبها في الريبو
-            var order = await _orderRepo.GetOrderById(orderid);
+            var order = await _orderRepo.GetOrderById(orderId);
 
-            // لو مش موجود ممكن نرجع null أو نرمي Exception حسب اللوجيك بتاعك
-            if (order == null) return null;
-            
-            // بنحوله لـ DTO
+            // ✅ بدل ما نرجع null
+            if (order == null)
+                throw new NotFoundException("Order", orderId);
+
             return _mapper.Map<OrderDTO>(order);
+        }
+
+        public async Task<IEnumerable<OrderDTO>> GetIncomingOrder()
+        {
+            int userId = GetCurrentUserId();
+
+            var orders = await _orderRepo.GetIncomingOrder(userId);
+
+            return _mapper.Map<IEnumerable<OrderDTO>>(orders);
         }
     }
 }
-
