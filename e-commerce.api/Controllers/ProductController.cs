@@ -63,7 +63,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
+        [Authorize (Roles ="Seller")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductBySellerDto dto)
         {
             try
@@ -97,7 +97,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
+        [Authorize (Roles ="Admin,Seller")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
@@ -116,6 +116,7 @@ namespace e_commerce.api.Controllers
         // --- Endpoints الخاصة ببرانش محمود دياب ---
 
         [HttpPut("{id}/stock")]
+        [Authorize(Roles = "Admin,Seller")]
         public async Task<IActionResult> UpdateStock(int id, int quantity)
         {
             try
@@ -130,6 +131,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet("{id}/stock")]
+        [Authorize(Roles = "Admin,Seller")]
         public async Task<IActionResult> CheckStock(int id)
         {
             try
@@ -149,6 +151,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet("low-stock")]
+        [Authorize(Roles = "Admin,Seller")]
         public async Task<IActionResult> LowStock(int threshold = 5)
         {
             var result = await _productService.GetLowStockAsync(threshold);

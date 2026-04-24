@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CloudinaryDotNet;
+﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using e_commerce.app.External;
 using e_commerce.app.Services.IServices;
+using e_commerce.core.Exceptions;          // ← ضيف ده
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -15,6 +11,10 @@ namespace e_commerce.app.Services.Implementation
     public class PhotoService : IPhotoService
     {
         private readonly Cloudinary _cloudinary;
+
+        // ✅ Constants — سهل تتغير في مكان واحد
+        private const long MaxFileSizeBytes = 5 * 1024 * 1024;  // 5MB
+        private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 
         public PhotoService(IOptions<CloudinarySettings> config)
         {
@@ -28,51 +28,56 @@ namespace e_commerce.app.Services.Implementation
 
         public async Task<string> UploadPhotoAsync(IFormFile file)
         {
-            // 1. Check if the file is valid
+            // ✅ الملف مش موجود
             if (file == null || file.Length == 0)
-                throw new ArgumentException("Invalid or empty file.");
+                throw new ValidationException("File", "Please provide a valid image file.");
 
-            // 2. Validate file extension
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            // ✅ الحجم أكبر من المسموح
+            if (file.Length > MaxFileSizeBytes)
+                throw new ValidationException("File", $"File size cannot exceed {MaxFileSizeBytes / (1024 * 1024)}MB.");
+
+            // ✅ Extension مش مسموح بيها
             var extension = Path.GetExtension(file.FileName).ToLower();
-            if (!allowedExtensions.Contains(extension))
-                throw new ArgumentException("Unsupported file format. Only JPG, PNG, and WEBP are allowed.");
+            if (!AllowedExtensions.Contains(extension))
+                throw new ValidationException("File",
+                    $"Unsupported format '{extension}'. Allowed formats: {string.Join(", ", AllowedExtensions)}.");
 
-            var uploadResult = new ImageUploadResult();
-
-            //  Upload the file
             using var stream = file.OpenReadStream();
+
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                Transformation = new Transformation().Width(800).Height(800).Crop("fill").Gravity("auto")
+                Transformation = new Transformation()
+                    .Width(800).Height(800).Crop("fill").Gravity("auto")
             };
 
-            uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
+            // ✅ Cloudinary رجع error
             if (uploadResult.Error != null)
-                throw new Exception(uploadResult.Error.Message);
+                throw new BusinessRuleException($"Image upload failed: {uploadResult.Error.Message}");
 
-            //  Return secure URL
             return uploadResult.SecureUrl.ToString();
         }
 
-
         public async Task<string> DeletePhotoAsync(string publicId)
         {
-            if (string.IsNullOrEmpty(publicId))
-
-                throw new ArgumentException("A valid Public Id is required for deletion.");
+            // ✅ publicId فاضي
+            if (string.IsNullOrWhiteSpace(publicId))
+                throw new ValidationException("PublicId", "A valid public ID is required for deletion.");
 
             var deleteParams = new DeletionParams(publicId);
             var result = await _cloudinary.DestroyAsync(deleteParams);
 
-            if (result.Result == "ok")
-            {
-                return "Deleted successfully.";
-            }
+            // ✅ الصورة مش موجودة في Cloudinary
+            if (result.Result == "not found")
+                throw new NotFoundException("Photo", publicId);
 
-            throw new Exception($"Error deleting photo from Cloudinary: {result.Result}");
+            // ✅ Cloudinary رجع error
+            if (result.Result != "ok")
+                throw new BusinessRuleException($"Failed to delete photo from Cloudinary: {result.Result}");
+
+            return "Photo deleted successfully.";
         }
     }
 }

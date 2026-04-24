@@ -1,4 +1,5 @@
 ﻿using e_commerce.app.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +7,7 @@ namespace e_commerce.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles ="Seller")]
     public class SellerController : ControllerBase
     {
         private readonly ISellerService _sellerService;

@@ -4,8 +4,8 @@ using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
 using e_commerce.core.Enum;
+using e_commerce.core.Exceptions;          // ← ضيف ده
 using Microsoft.Extensions.Configuration;
-using System;
 
 public class PaymentService : IPaymentService
 {
@@ -18,8 +18,7 @@ public class PaymentService : IPaymentService
     public PaymentService(
         IPaymentRepository repo,
         IPaymobService paymob,
-           IOrderRepo orderRepo,
-
+        IOrderRepo orderRepo,
         IConfiguration config,
         INotificationService notificationService)
     {
@@ -32,12 +31,25 @@ public class PaymentService : IPaymentService
 
     public async Task<PaymentResponseDto> CreatePaymentAsync(CreatePaymentDto dto)
     {
+        // ✅ الأوردر مش موجود
         var order = await _orderRepo.GetOrderById(dto.OrderId);
-
         if (order == null)
-            throw new Exception("Order not found");
+            throw new NotFoundException("Order", dto.OrderId);
+
+        // ✅ الأوردر مش في حالة Pending — يعني اتدفع قبل كده أو اتكنسل
         if (order.Status != OrderStatus.Pending)
-            throw new Exception($"Order is already {order.Status} ");
+            throw new BusinessRuleException(
+                $"Cannot create payment for an order with status '{order.Status}'.");
+
+        // ✅ في payment موجود بالفعل للأوردر ده
+        var existingPayment = await _repo.GetByOrderIdAsync(order.Id);
+        if (existingPayment != null && existingPayment.Status == PaymentStatus.Approved)
+            throw new ConflictException($"Order #{order.Id} has already been paid.");
+
+        // ✅ الـ IframeId مش موجود في الـ config
+        var iframeId = _config["Paymob:IframeId"];
+        if (string.IsNullOrEmpty(iframeId))
+            throw new BusinessRuleException("Paymob Iframe ID is not configured.");
 
         var payment = new Payment
         {
@@ -49,17 +61,17 @@ public class PaymentService : IPaymentService
 
         await _repo.AddAsync(payment);
 
+        // ✅ الـ PaymobService هيعمل throw لو فيه مشكلة — الـ Middleware هيمسكها
         var token = await _paymob.GetAuthToken();
         var paymobOrderId = await _paymob.CreateOrder(token, payment.Amount);
         var paymentKey = await _paymob.GetPaymentKey(token, paymobOrderId, payment.Amount);
-
-        var iframeId = _config["Paymob:IframeId"];
 
         var iframeUrl =
             $"https://accept.paymob.com/api/acceptance/iframes/{iframeId}?payment_token={paymentKey}";
 
         payment.TransactionReference = paymobOrderId.ToString();
         await _repo.UpdateAsync(payment);
+
         return new PaymentResponseDto
         {
             PaymentId = payment.Id,
@@ -69,34 +81,49 @@ public class PaymentService : IPaymentService
 
     public async Task HandleCallbackAsync(PaymobCallbackDto data)
     {
-        bool success = data.Obj.Success;
-        int paymobOrderId = data.Obj.Order.Id;
-
-        var payment = await _repo.GetByTransactionRef(paymobOrderId.ToString());
-
+        // ✅ Callback — لو الـ payment مش موجود نخرج بهدوء (مش error)
+        // ممكن يكون webhook قديم أو duplicate
+        var payment = await _repo.GetByTransactionRef(data.Obj.Order.Id.ToString());
         if (payment == null) return;
 
-        if (success)
+        // ✅ تجاهل لو الـ payment اتعالج قبل كده (idempotency)
+        if (payment.Status != PaymentStatus.Pending) return;
+
+        if (data.Obj.Success)
         {
             payment.Status = PaymentStatus.Approved;
             payment.PaidAt = DateTime.UtcNow;
 
             var order = await _orderRepo.GetOrderById(payment.OrderId);
-            order.Status = OrderStatus.Processing;
-            await _orderRepo.UpdateOrder(order);
-            await _notificationService.AddNotifiAsync(new e_commerce.app.Dto.NotificationDto.CreateNotificationDto
+
+            // ✅ لو الأوردر مش موجود نسجل الـ error بس ومنكرهوش
+            if (order != null)
             {
-                Message = $"Payment Sacssefully ",
+                order.Status = OrderStatus.Processing;
+                await _orderRepo.UpdateOrder(order);
 
-                Title = "Confirm Payment",
-                UserId = order.CustomerId
-
-            });
+                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                {
+                    UserId = order.CustomerId,
+                    Title = "Payment Confirmed",
+                    Message = $"Your payment for order #{order.Id} was successful."
+                });
+            }
         }
         else
         {
             payment.Status = PaymentStatus.Refused;
-            
+
+            var order = await _orderRepo.GetOrderById(payment.OrderId);
+            if (order != null)
+            {
+                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                {
+                    UserId = order.CustomerId,
+                    Title = "Payment Failed",
+                    Message = $"Your payment for order #{order.Id} was declined. Please try again."
+                });
+            }
         }
 
         await _repo.UpdateAsync(payment);

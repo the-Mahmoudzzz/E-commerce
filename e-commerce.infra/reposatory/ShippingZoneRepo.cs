@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -52,6 +53,10 @@ namespace e_commerce.infra.reposatory
                 zone.IsActive = false; 
                 await _context.SaveChangesAsync();
             }
+        }
+        public async Task<bool> AnyAsync(Expression<Func<ShippingZone, bool>> predicate)
+        {
+            return await _context.shippingZones.AnyAsync(predicate);
         }
     }
 }

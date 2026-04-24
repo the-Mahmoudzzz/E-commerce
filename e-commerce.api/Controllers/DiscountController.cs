@@ -39,7 +39,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPost]
-        [Authorize("Seller,Admin")]
+        [Authorize(Roles ="Seller,Admin")]
         public async Task<IActionResult> Create([FromBody] CreateDiscountDto dto)
         {
             await _discountService.AddAsync(dto);
@@ -47,7 +47,7 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpPut]
-        [Authorize]
+        [Authorize (Roles ="Seller,Admin")]
         public async Task<IActionResult> Update([FromBody] UpdateDiscountDto dto)
         {
             await _discountService.UpdateAsync(dto);

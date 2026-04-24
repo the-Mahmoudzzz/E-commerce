@@ -26,6 +26,11 @@ namespace e_commerce.infra.reposatory
                 .Include(s => s.ShippingZone)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
+        public async Task<Shipment> GetByOrderIdAsync(int orderId)
+        {
+            return await _context.shipments
+                                 .FirstOrDefaultAsync(s => s.OrderId == orderId);
+        }
 
         public async Task AddAsync(Shipment shipment)
         {
@@ -35,6 +40,7 @@ namespace e_commerce.infra.reposatory
         public void Update(Shipment shipment)
         {
             _context.shipments.Update(shipment);
+            _context.SaveChanges();
         }
 
         public async Task SaveChangesAsync()

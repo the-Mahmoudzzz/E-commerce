@@ -5,15 +5,11 @@ using e_commerce.app.Services.ExternalService;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
 using e_commerce.core.Enum;
+using e_commerce.core.Exceptions;         
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Web.App.DTOs;
 using Web.App.Services;
 
@@ -34,7 +30,6 @@ namespace e_commerce.app.Services.Implementation
             GetTokenServices tokenService,
             SendEmailService emailService,
             GoogleTokenValidator googleTokenValidator,
-            
             IShoppingCartRepo cartrepo)
         {
             _userManager = userManager;
@@ -47,7 +42,14 @@ namespace e_commerce.app.Services.Implementation
 
         public async Task RegisterAsync(RegisterDTO dto, string baseUrl)
         {
-         
+            // ✅ Role validation
+            if (dto.UserRole != UserRole.User && dto.UserRole != UserRole.Seller)
+                throw new ValidationException("UserRole", "Role must be either User or Seller.");
+
+            // ✅ Check duplicate email
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser is not null)
+                throw new ConflictException("An account with this email already exists.");
 
             var user = new User
             {
@@ -56,29 +58,23 @@ namespace e_commerce.app.Services.Implementation
                 PhoneNumber = dto.PhoneNumber
             };
 
-            if (dto.UserRole != UserRole.User &&
-             dto.UserRole != UserRole.Seller)
-            {
-                throw new Exception("Invalid Role");
-            }
-
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
-                throw new Exception(result.Errors.First().Description);
+                throw new ValidationException(
+                    "Registration failed.",
+                    new Dictionary<string, string[]>
+                    {
+                        { "Identity", result.Errors.Select(e => e.Description).ToArray() }
+                    });
 
-           
             if (dto.UserRole == UserRole.User)
             {
                 user.IsApproved = true;
                 await _cartrepo.AddCatToUserAsync(user.Id);
-                
             }
 
             await _userManager.AddToRoleAsync(user, dto.UserRole.ToString());
 
-           
-
-            // ابعت email تأكيد
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             var link = $"{baseUrl}/api/account/confirm-email?email={user.Email}&code={code}";
@@ -93,64 +89,67 @@ namespace e_commerce.app.Services.Implementation
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
 
-            // FIX 2a: user مش موجود
-            if (user is null )
-                throw new UnauthorizedAccessException("Invalid credentials.");
+            // ✅ user مش موجود — نفس الرسالة عشان منكشفش إيه الغلط بالظبط
+            if (user is null)
+                throw new AuthenticationException("Invalid email or password.");
 
-            // FIX 2b: email مش مأكد
+            // ✅ email مش متأكد
             if (!user.EmailConfirmed)
-                throw new Exception("Please confirm your email before logging in.");
+                throw new AuthenticationException("Please confirm your email before logging in.");
 
+            // ✅ Seller لسه مش موافق عليه
             if (!user.IsApproved)
-                throw new Exception("Please Waiting to confirm your Account.");
+                throw new AuthenticationException("Your account is pending admin approval.");
 
-            // FIX 2c: الحساب محظور من الـ Admin
+            // ✅ الحساب محظور
             if (await _userManager.IsLockedOutAsync(user))
-                throw new Exception("Account is suspended. Contact support.");
+                throw new AuthenticationException("Account is suspended. Please contact support.");
 
-            // FIX 2d: كلمة السر غلط
+            // ✅ باسورد غلط
             if (!await _userManager.CheckPasswordAsync(user, dto.Password))
-                throw new UnauthorizedAccessException("Invalid credentials.");
+                throw new AuthenticationException("Invalid email or password.");
 
             return await BuildAuthResponseAsync(user);
         }
 
         public async Task<AuthResponseDto> GogleLogin(GoogleLoginRequest request)
         {
+            // ✅ Google token مش صحيح
             var payload = await _googleTokenValidator.ValidateAsync(request.IdToken);
             if (payload is null)
-                throw new Exception("Invalid Google token.");
+                throw new AuthenticationException("Invalid Google token. Please try again.");
 
             var user = await _userManager.FindByEmailAsync(payload.Email);
 
             if (user is null)
             {
-                // User جديد من Google
                 user = new User
                 {
                     Email = payload.Email,
                     UserName = payload.Email,
-                    EmailConfirmed = true ,
-                   IsApproved = true 
-                    
+                    EmailConfirmed = true,
+                    IsApproved = true
                 };
 
                 var result = await _userManager.CreateAsync(user);
                 if (!result.Succeeded)
-                    throw new Exception(result.Errors.First().Description);
+                    throw new ValidationException(
+                        "Google registration failed.",
+                        new Dictionary<string, string[]>
+                        {
+                            { "Identity", result.Errors.Select(e => e.Description).ToArray() }
+                        });
 
-                // ربط بـ Google login
-                await _userManager.AddLoginAsync(user, new UserLoginInfo(
-                    "Google", payload.Subject, "Google"));
+                await _userManager.AddLoginAsync(user,
+                    new UserLoginInfo("Google", payload.Subject, "Google"));
 
-                // FIX 3: حط الـ role — Google users = Customer دايماً
-                await _userManager.AddToRoleAsync(user,"User" );
+                await _userManager.AddToRoleAsync(user, "User");
             }
             else
             {
-                // User موجود — تأكد مش محظور
+                // ✅ موجود بس محظور
                 if (await _userManager.IsLockedOutAsync(user))
-                    throw new Exception("Account is suspended. Contact support.");
+                    throw new AuthenticationException("Account is suspended. Please contact support.");
             }
 
             return await BuildAuthResponseAsync(user);
@@ -160,15 +159,16 @@ namespace e_commerce.app.Services.Implementation
         {
             var storedToken = await _refreshRepo.GetByTokenAsync(token);
 
-            if (storedToken is null ||
-                storedToken.Expires < DateTime.UtcNow ||
-                storedToken.IsRevoked)
-                throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+            // ✅ توكن مش موجود، منتهي، أو مسحوب
+            if (storedToken is null || storedToken.IsRevoked)
+                throw new AuthenticationException("Invalid refresh token.");
 
-            // Revoke القديم
+            if (storedToken.Expires < DateTime.UtcNow)
+                throw new AuthenticationException("Refresh token has expired. Please log in again.");
+
+            // Revoke القديم واعمل واحد جديد
             storedToken.IsRevoked = true;
 
-            // اعمل واحد جديد
             var newRefreshToken = new RefreshToken
             {
                 Token = GenerateRefreshToken(),
@@ -189,6 +189,7 @@ namespace e_commerce.app.Services.Implementation
 
         public async Task LogoutAsync(string token)
         {
+            // ✅ لو التوكن مش موجود — مش error، بس نخرج بهدوء
             var storedToken = await _refreshRepo.GetByTokenAsync(token);
             if (storedToken is not null)
                 await _refreshRepo.RevokeAsync(storedToken);
@@ -198,19 +199,25 @@ namespace e_commerce.app.Services.Implementation
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user is null)
-                throw new Exception("User not found.");
+                throw new NotFoundException("User", email);
+
+            // ✅ لو الإيميل متأكد أصلاً
+            if (user.EmailConfirmed)
+                throw new BusinessRuleException("Email is already confirmed.");
 
             var decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, decoded);
 
             if (!result.Succeeded)
-                throw new Exception("Email confirmation failed.");
+                throw new BusinessRuleException("Email confirmation failed. The link may have expired.");
         }
 
         public async Task ForgotPasswordAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if (user is null) return; 
+
+            // ✅ مش بنكشف إن الإيميل ده مش موجود — security best practice
+            if (user is null) return;
 
             var otp = new Random().Next(100000, 999999).ToString();
             user.ResetPasswordOTP = otp;
@@ -228,19 +235,26 @@ namespace e_commerce.app.Services.Implementation
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user is null)
-                throw new Exception("User not found.");
+                throw new NotFoundException("User", email);
 
-            if (user.ResetPasswordOTP != otp ||
-                user.ResetPasswordOTPExpiry < DateTime.UtcNow)
-                throw new Exception("Invalid or expired OTP.");
+            // ✅ OTP غلط أو منتهي
+            if (user.ResetPasswordOTP != otp)
+                throw new BusinessRuleException("Invalid OTP. Please request a new one.");
+
+            if (user.ResetPasswordOTPExpiry < DateTime.UtcNow)
+                throw new BusinessRuleException("OTP has expired. Please request a new one.");
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
 
             if (!result.Succeeded)
-                throw new Exception("Password reset failed.");
+                throw new ValidationException(
+                    "Password reset failed.",
+                    new Dictionary<string, string[]>
+                    {
+                        { "Password", result.Errors.Select(e => e.Description).ToArray() }
+                    });
 
-           
             user.ResetPasswordOTP = null;
             user.ResetPasswordOTPExpiry = null;
             await _userManager.UpdateAsync(user);
@@ -250,12 +264,11 @@ namespace e_commerce.app.Services.Implementation
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user is null)
-                throw new Exception("User not found.");
+                throw new NotFoundException("User", userId);
 
             await _userManager.DeleteAsync(user);
         }
 
-        
         private async Task<AuthResponseDto> BuildAuthResponseAsync(User user)
         {
             var accessToken = await _tokenService.GetToken(user);

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,5 +19,6 @@ namespace e_commerce.app.Interfaces
         Task UpdateAsync(ShippingZone zone);
 
         Task DeleteAsync(int id);
+        Task<bool> AnyAsync(Expression<Func<ShippingZone, bool>> predicate);
     }
 }

@@ -2,6 +2,7 @@
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using e_commerce.core.Exceptions;          // ← ضيف ده
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -18,25 +19,30 @@ namespace e_commerce.app.Services.Implementation
             _walletRepo = walletRepo;
         }
 
-
-        public async Task<WithdrawalResponseDto> RequestWithdrawalAsync(int sellerId,CreateWithdrawalDto dto)
+        public async Task<WithdrawalResponseDto> RequestWithdrawalAsync(int sellerId, CreateWithdrawalDto dto)
         {
-            var wallet = await _walletRepo.GetBySellerIdAsync(sellerId);
-
-            if (wallet == null)
-                throw new Exception("Wallet not found");
-
+            // ✅ Validate amount قبل ما نكلم الـ DB
             if (dto.Amount <= 0)
-                throw new Exception("Invalid amount");
+                throw new ValidationException("Amount", "Withdrawal amount must be greater than zero.");
 
+            var wallet = await _walletRepo.GetBySellerIdAsync(sellerId);
+            if (wallet == null)
+                throw new NotFoundException("Wallet", sellerId);
+
+            // ✅ رصيد مش كفاية — رسالة واضحة بالأرقام
             if (wallet.Balance < dto.Amount)
-                throw new Exception("Insufficient balance");
+                throw new BusinessRuleException(
+                    $"Insufficient balance. Available: {wallet.Balance:C}, Requested: {dto.Amount:C}.");
 
-         
+            // ✅ في request تاني pending — منعاش سحب وفيه واحد شغال
+            var pendingWithdrawal = await _withdrawalRepo.GetBySellerIdAsync(sellerId);
+            if (pendingWithdrawal != null)
+                throw new BusinessRuleException(
+                    "You already have a pending withdrawal request. Please wait for it to be processed.");
+
             wallet.Balance -= dto.Amount;
             wallet.PendingBalance += dto.Amount;
             wallet.LastUpdated = DateTime.UtcNow;
-
             await _walletRepo.UpdateAsync(wallet);
 
             var withdrawal = new Withdrawal
@@ -58,32 +64,32 @@ namespace e_commerce.app.Services.Implementation
             };
         }
 
-       
         public async Task ApproveWithdrawalAsync(int withdrawalId)
         {
             var withdrawal = await _withdrawalRepo.GetByIdAsync(withdrawalId);
-
             if (withdrawal == null)
-                throw new Exception("Withdrawal not found");
+                throw new NotFoundException("Withdrawal", withdrawalId);
 
+            // ✅ اتعالج قبل كده
             if (withdrawal.WithdrawlsStatus != WithdrawlsStatus.Pending)
-                throw new Exception("Already processed");
+                throw new BusinessRuleException(
+                    $"Withdrawal has already been {withdrawal.WithdrawlsStatus}.");
 
             var wallet = await _walletRepo.GetBySellerIdAsync(withdrawal.SelerId);
-
             if (wallet == null)
-                throw new Exception("Wallet not found");
+                throw new NotFoundException("Wallet", withdrawal.SelerId);
 
+            // ✅ Pending balance أقل من المبلغ — data inconsistency
             if (wallet.PendingBalance < withdrawal.Amount)
-                throw new Exception("Invalid pending balance");
+                throw new BusinessRuleException(
+                    $"Pending balance ({wallet.PendingBalance:C}) is less than withdrawal amount ({withdrawal.Amount:C}).");
 
             wallet.PendingBalance -= withdrawal.Amount;
             wallet.LastUpdated = DateTime.UtcNow;
-
             await _walletRepo.UpdateAsync(wallet);
 
             withdrawal.WithdrawlsStatus = WithdrawlsStatus.Paid;
-
+            
             await _withdrawalRepo.UpdateAsync(withdrawal);
         }
     }
