@@ -116,5 +116,11 @@ namespace e_commerce.app.Services.Implementation
         {
             return await _cartRepository.DeleteCartItemsAsync(userId);
         }
+        public async Task<bool> DeleteItemInCartAsync(int userId,int productid)
+        {
+
+            return await _cartRepository.DeleteItemInCartAsync(userId,productid);
+        }
+
     }
 }

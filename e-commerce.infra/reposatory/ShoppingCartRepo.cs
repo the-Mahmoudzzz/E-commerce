@@ -109,5 +109,26 @@ namespace e_commerce.infra.reposatory
             }
             return true;
         }
+        public async Task<bool> DeleteItemInCartAsync(int userid, int productid)
+        {
+            var cart = await GetUserCartAsync(userid);
+
+            if (cart == null)
+                return false;
+
+            var item = await _context.shoppingCartItems
+                .FirstOrDefaultAsync(p =>
+                    p.ProductId == productid &&
+                    p.ShoppingCartId == cart.Id);
+            
+
+            if (item == null)
+                return false;
+
+            _context.shoppingCartItems.Remove(item);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }
