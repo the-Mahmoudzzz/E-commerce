@@ -51,6 +51,15 @@ namespace e_commerce.api.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
             await _cartService.DeleteCartItemsAsync(userId);
         }
+        [HttpDelete("Productid")]
+        public async Task<IActionResult> DeleteItemInPasket(int productid)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            bool delete= await _cartService.DeleteItemInCartAsync(userId,productid);
+            if (!delete)
+                return BadRequest("Not Foud");
+            return Ok("Delete");
+        }
     }
 }
 

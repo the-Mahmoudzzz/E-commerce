@@ -12,6 +12,7 @@ namespace e_commerce.app.Services.IServices
         Task<ShoppingCartDto?> GetCartAsync(int cartId);
         Task<ShoppingCartDto?> UpdateCartAsync(UpdateCartDto basketDto);
         Task AddItemsToCartAsync(int userId, int productId, int quantity);
-        Task<bool> DeleteCartItemsAsync(int cartId);
+        Task<bool> DeleteCartItemsAsync(int userid);
+        Task<bool> DeleteItemInCartAsync(int userid,int productid);
     }
 }

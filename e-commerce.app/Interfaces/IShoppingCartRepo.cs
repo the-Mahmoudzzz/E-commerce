@@ -14,5 +14,6 @@ namespace e_commerce.app.Interfaces
         Task AddItemToCartAsync(int cartId, ShoppingCartItem item);
         Task<ShopingCart?> UpdateCartAsync(ShopingCart cart);
         Task<bool> DeleteCartItemsAsync(int userid);
+        Task<bool> DeleteItemInCartAsync(int userid, int productid);
     }
 }
