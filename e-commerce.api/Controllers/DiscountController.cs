@@ -17,9 +17,9 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParamsDto pagination)
         {
-            var discounts = await _discountService.GetAllAsync();
+            var discounts = await _discountService.GetAllAsync(pagination);
             return Ok(discounts);
         }
 

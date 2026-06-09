@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Interfaces;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -26,10 +27,10 @@ namespace e_commerce.infra.reposatory
                 .FirstOrDefaultAsync(d => d.Id == id);
         }
 
-        public async Task<IReadOnlyList<Discount>> GetAllAsync()
+        public async Task<IReadOnlyList<Discount>> GetAllAsync(PaginationParamsDto pagination)
         {
-            return await _context.Discounts
-                .Include(d => d.DiscountCategries)
+            return await _context.Discounts.AsNoTracking()
+                .Include(d => d.DiscountCategries).OrderBy(d=>d.Id).Skip((pagination.PageNumber-1)*pagination.PageSize).Take(pagination.PageSize)
                 .ToListAsync();
         }
 

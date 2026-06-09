@@ -1,4 +1,5 @@
-﻿using e_commerce.core.entities;
+﻿using e_commerce.app.Dto;
+using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace e_commerce.app.Interfaces
 {
     public interface ISellerRepository
     {
-        Task<List<Order>> GetSellerOrdersAsync(int sellerId);
-        Task<List<OrderDetail>> GetSellerOrderDetailsAsync(int sellerId);
+        Task<List<Order>> GetSellerOrdersAsync(int sellerId, PaginationParamsDto pagination);
+        Task<List<OrderDetail>> GetSellerOrderDetailsAsync(int sellerId, PaginationParamsDto pagination);
     }
 }

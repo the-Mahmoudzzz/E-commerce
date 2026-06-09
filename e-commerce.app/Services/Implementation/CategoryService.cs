@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.CtegoriesDto;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
@@ -43,15 +44,15 @@ namespace e_commerce.app.Services.Implementation
            await repo.DeleteAsync(id);
         }
 
-        async Task<IEnumerable<CategoryDto>> ICategoryService.GetAllAsync()
+        public async Task<IEnumerable<Category>> GetAllAsync(
+    PaginationParamsDto pagination)
         {
-            var categories=await repo.GetAllAsync();
-            return  mapper.Map<IEnumerable<CategoryDto>>(categories);
+            return await repo.GetAllAsync(pagination);
         }
 
-        async Task<IEnumerable<SubCategoryDto>> ICategoryService.GetAllSubCategoryAsync()
+        async Task<IEnumerable<SubCategoryDto>> ICategoryService.GetAllSubCategoryAsync(PaginationParamsDto pagination)
         {
-            var categories = await repo.GetAllSubAsync();
+            var categories = await repo.GetAllSubAsync(pagination);
             return mapper.Map<IEnumerable<SubCategoryDto>>(categories);
         }
 

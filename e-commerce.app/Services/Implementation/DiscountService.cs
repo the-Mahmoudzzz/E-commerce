@@ -32,9 +32,9 @@ public class DiscountService : IDiscountService
         return discount;
     }
 
-    public async Task<IReadOnlyList<DiscountDto>> GetAllAsync()
+    public async Task<IReadOnlyList<DiscountDto>> GetAllAsync(PaginationParamsDto pagination)
     {
-        var discounts = await _repo.GetAllAsync();
+        var discounts = await _repo.GetAllAsync(pagination);
         return _mapper.Map<IReadOnlyList<DiscountDto>>(discounts);
     }
 

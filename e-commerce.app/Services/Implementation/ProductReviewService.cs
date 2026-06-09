@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.ProductReviewDTO;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace e_commerce.app.Services.Implementation
 {
-    public class ProductReviewService : IReviewProductService
+    public class ProductReviewService :        IReviewProductService
     {
         private readonly IReviewProductRepo _repo;
         private readonly IMapper _mapper;
@@ -57,9 +58,9 @@ namespace e_commerce.app.Services.Implementation
             return _mapper.Map<ProductReviewDTO>(ProductReview);
         }
 
-        public async Task<IEnumerable<ProductReviewDTO>> GetByProductIdAsync(int productId, bool onlyApproved = true)
+        public async Task<IEnumerable<ProductReviewDTO>> GetByProductIdAsync(PaginationParamsDto pagination, int productId, bool onlyApproved = true)
         {
-            var ProductReview=await _repo.GetByProductIdAsync(productId, onlyApproved);
+            var ProductReview=await _repo.GetByProductIdAsync(pagination, productId, onlyApproved);
             return _mapper.Map<IEnumerable<ProductReviewDTO>>(ProductReview);
         }
 

@@ -1,4 +1,5 @@
-﻿using e_commerce.core.entities;
+﻿using e_commerce.app.Dto;
+using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,9 @@ namespace e_commerce.app.Interfaces
     public interface ICategoryRepo
     {
         Task AddAsync(Category category);
-        Task<IEnumerable<Category>> GetAllAsync();
-        Task<IEnumerable<Category>> GetAllSubAsync();
+        Task<IEnumerable<Category>> GetAllAsync(
+             PaginationParamsDto pagination);
+        Task<IEnumerable<Category>> GetAllSubAsync(PaginationParamsDto pagination);
         Task<Category> GetbyIdAsync(int id);
         Task<Category> GetbyIdSubAsync(int id);
         Task<Category> UpdateAsync(Category category);

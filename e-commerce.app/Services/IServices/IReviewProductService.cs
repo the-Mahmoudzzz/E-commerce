@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.ProductReviewDTO;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.ProductReviewDTO;
 using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace e_commerce.app.Services.IServices
     {
         Task AddAsync(AddProductReviewDTO productReviewDTO);
         Task<IEnumerable<ProductReviewDTO>> GetByProductIdAsync(
+            PaginationParamsDto pagination,
        int productId,
        bool onlyApproved = true
    );

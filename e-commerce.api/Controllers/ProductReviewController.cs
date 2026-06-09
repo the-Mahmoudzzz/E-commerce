@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.ProductReviewDTO;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.ProductReviewDTO;
 using e_commerce.app.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -48,11 +49,11 @@ namespace e_commerce.api.Controllers
             return BadRequest();
         }
         [HttpGet("product/{productId}")]
-        public async Task<IActionResult> GetByProductIdAsync(int productId, bool onlyApproved = true)
+        public async Task<IActionResult> GetByProductIdAsync([FromQuery] PaginationParamsDto pagination, int productId, bool onlyApproved = true)
         {
             if (ModelState.IsValid)
             {
-                var result = await _reviewProductService.GetByProductIdAsync(productId, onlyApproved);
+                var result = await _reviewProductService.GetByProductIdAsync(pagination, productId, onlyApproved);
                 return Ok(result);
             }
             return BadRequest();
