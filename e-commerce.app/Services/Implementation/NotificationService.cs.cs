@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.NotificationDto;
 using e_commerce.app.External;
 using e_commerce.app.Interfaces;
@@ -79,9 +80,9 @@ namespace e_commerce.app.Services.Implementation
             await _notifiRepo.Delete(id);
         }
 
-        public async Task<IEnumerable<NotifcationDto>> GetALLAsync()
+        public async Task<IEnumerable<NotifcationDto>> GetALLAsync(PaginationParamsDto pagination)
         {
-            var notifications = await _notifiRepo.GetALLAsync();
+            var notifications = await _notifiRepo.GetALLAsync(pagination);
             return _mapper.Map<IEnumerable<NotifcationDto>>(notifications);
         }
 

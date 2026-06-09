@@ -11,7 +11,7 @@ namespace e_commerce.app.Services.IServices
     public interface IDiscountService
     {
         Task<Discount> ApplyDiscountAsync(string code, decimal orderTotal);
-        Task<IReadOnlyList<DiscountDto>> GetAllAsync();
+        Task<IReadOnlyList<DiscountDto>> GetAllAsync(PaginationParamsDto pagination);
         Task<DiscountDto> GetByIdAsync(int id);
         Task AddAsync(CreateDiscountDto dto);
         Task UpdateAsync(UpdateDiscountDto dto);

@@ -1,3 +1,4 @@
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.interfaces;
 using e_commerce.app.servieses.iserviese;
@@ -40,9 +41,9 @@ namespace e_commerce.app.servieses.impelmentaion
             };
         }
 
-        public async Task<IEnumerable<summaryProductDto>> GetAllAsync()
+        public async Task<IEnumerable<summaryProductDto>> GetAllAsync(PaginationParamsDto pagination)
         {
-            var products = await _productRepository.GetAllAsync();
+            var products = await _productRepository.GetAllAsync(pagination);
 
             return products
                 .Where(p => p.IsApproved && p.IsActive)
@@ -57,9 +58,9 @@ namespace e_commerce.app.servieses.impelmentaion
                 });
         }
 
-        public async Task<IEnumerable<summaryProductDto>> GetBySellerAsync(int sellerId)
+        public async Task<IEnumerable<summaryProductDto>> GetBySellerAsync(int sellerId, PaginationParamsDto pagination)
         {
-            var products = await _productRepository.GetBySellerAsync(sellerId);
+            var products = await _productRepository.GetBySellerAsync(sellerId,pagination);
 
             return products.Where(p => p.IsApproved).Select(p => new summaryProductDto
             {

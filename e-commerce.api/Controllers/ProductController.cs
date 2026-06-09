@@ -1,3 +1,4 @@
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.servieses.iserviese;
 using Microsoft.AspNetCore.Authorization;
@@ -33,19 +34,19 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParamsDto pagination)
         {
             var products = await _productService
-                .GetAllAsync();
+                .GetAllAsync(pagination);
             return Ok(products);
         }
 
         [HttpGet("seller/{sellerId}")]
 
-        public async Task<IActionResult> GetBySeller(int sellerId)
+        public async Task<IActionResult> GetBySeller(int sellerId,PaginationParamsDto pagination)
         {
             var products = await _productService
-                .GetBySellerAsync(sellerId);
+                .GetBySellerAsync(sellerId, pagination);
 
             return Ok(products);
         }

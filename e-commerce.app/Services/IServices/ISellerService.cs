@@ -10,7 +10,7 @@ namespace e_commerce.app.Services.IServices
 {
     public interface ISellerService
     {
-        Task<SellerDashboardDto> GetDashboardAsync();
-        Task<SellerEarningsDto> GetEarningsAsync();
+        Task<SellerDashboardDto> GetDashboardAsync(PaginationParamsDto pagination);
+        Task<SellerEarningsDto> GetEarningsAsync(PaginationParamsDto pagination);
     }
 }

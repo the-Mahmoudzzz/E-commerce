@@ -1,3 +1,4 @@
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.interfaces;
 using e_commerce.core.entities;
@@ -27,9 +28,9 @@ namespace e_commerce.infra.reposatory
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<IEnumerable<Product>> GetAllAsync(PaginationParamsDto pagination)
         {
-            return await _context.products.Include(p => p.Category)
+            return await _context.products.AsNoTracking().OrderBy(p => p.Id).Skip((pagination.PageNumber - 1) * pagination.PageSize).Take(pagination.PageSize).Include(p => p.Category)
                 .Include(p => p.Seller)
                 .ToListAsync();
         }
@@ -56,19 +57,19 @@ namespace e_commerce.infra.reposatory
             }
         }
 
-        public async Task<IEnumerable<Product>> GetByCategoryAsync(int categoryId)
+        public async Task<IEnumerable<Product>> GetByCategoryAsync(int categoryId,PaginationParamsDto pagination)
         {
-            return await _context.products
-                .Where(p => p.CategoryId == categoryId)
+            return await _context.products.AsNoTracking()
+                .Where(p => p.CategoryId == categoryId).OrderBy(p => p.Id).Skip((pagination.PageNumber - 1) * pagination.PageSize).Take(pagination.PageSize)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Product>> GetBySellerAsync(int sellerId)
+        public async Task<IEnumerable<Product>> GetBySellerAsync(int sellerId, PaginationParamsDto pagination)
         {
-            return await _context.products
+            return await _context.products.AsNoTracking()
                 .Include(p => p.Category)
                 .Include(p => p.Seller)
-                .Where(p => p.SellerId == sellerId)
+                .Where(p => p.SellerId == sellerId).OrderBy(p => p.Id).Skip((pagination.PageNumber - 1) * pagination.PageSize).Take(pagination.PageSize)
                 .ToListAsync();
         }
 

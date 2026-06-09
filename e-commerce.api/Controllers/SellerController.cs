@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Services.IServices;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,16 +19,16 @@ namespace e_commerce.api.Controllers
         }
 
         [HttpGet("dashboard")]
-        public async Task<IActionResult> GetDashboard()
+        public async Task<IActionResult> GetDashboard([FromQuery] PaginationParamsDto pagination)
         {
-            var result = await _sellerService.GetDashboardAsync();
+            var result = await _sellerService.GetDashboardAsync(pagination);
             return Ok(result);
         }
 
         [HttpGet("earnings")]
-        public async Task<IActionResult> GetEarnings()
+        public async Task<IActionResult> GetEarnings([FromQuery] PaginationParamsDto pagination)
         {
-            var result = await _sellerService.GetEarningsAsync();
+            var result = await _sellerService.GetEarningsAsync(pagination);
             return Ok(result);
         }
     }
