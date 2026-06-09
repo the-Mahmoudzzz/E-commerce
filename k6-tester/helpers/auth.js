@@ -1,18 +1,58 @@
+// ============================================================
+//  helpers/auth.js — دالة بتعمل login وترجع الـ token
+// ============================================================
+
 import http from 'k6/http';
 import { BASE_URL } from '../config.js';
 
+/**
+ * بتعمل login وترجع accessToken
+ * لو فشلت بترجع null
+ */
 export function getAuthToken(email, password) {
   const res = http.post(
     `${BASE_URL}/api/account/login`,
     JSON.stringify({ email, password }),
-    { headers: { 'Content-Type': 'application/json' } }
+    {
+      headers: { 'Content-Type': 'application/json' },
+      // مهم عشان الـ SSL certificate بتاع localhost
+      insecureSkipTLSVerify: true,
+    }
   );
 
-  // لو فشل الـ login، وقف الـ test
   if (res.status !== 200) {
-    console.error(`Login failed: ${res.status} — ${res.body}`);
+    console.error(`❌ Login failed [${res.status}] for ${email}: ${res.body}`);
     return null;
   }
 
-  return JSON.parse(res.body).data.accessToken;
+  try {
+    const body = JSON.parse(res.body);
+
+    // API بيرجع { accessToken } أو { data: { accessToken } }
+    // بنتعامل مع الحالتين
+    const token = body.accessToken || (body.data && body.data.accessToken);
+
+    if (!token) {
+      console.error(`❌ No token found in response: ${res.body}`);
+      return null;
+    }
+
+    return token;
+  } catch (e) {
+    console.error(`❌ Failed to parse login response: ${e}`);
+    return null;
+  }
+}
+
+/**
+ * بترجع الـ Authorization header جاهز للاستخدام
+ */
+export function getAuthHeaders(email, password) {
+  const token = getAuthToken(email, password);
+  if (!token) return null;
+
+  return {
+    'Content-Type':  'application/json',
+    'Authorization': `Bearer ${token}`,
+  };
 }
