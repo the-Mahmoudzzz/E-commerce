@@ -15,7 +15,6 @@ export function getAuthToken(email, password) {
     JSON.stringify({ email, password }),
     {
       headers: { 'Content-Type': 'application/json' },
-      // مهم عشان الـ SSL certificate بتاع localhost
       insecureSkipTLSVerify: true,
     }
   );
@@ -27,10 +26,7 @@ export function getAuthToken(email, password) {
 
   try {
     const body = JSON.parse(res.body);
-
-    // API بيرجع { accessToken } أو { data: { accessToken } }
-    // بنتعامل مع الحالتين
-    const token = body.accessToken || (body.data && body.data.accessToken);
+    const token = body.accessToken;
 
     if (!token) {
       console.error(`❌ No token found in response: ${res.body}`);

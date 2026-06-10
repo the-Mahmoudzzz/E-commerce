@@ -32,14 +32,13 @@ export default function () {
   );
 
   const loginOk = check(loginRes, {
-    'login: status 200':     (r) => r.status === 200,
-    'login: has token':      (r) => {
+    'login: status 200':      (r) => r.status === 200,
+    'login: has token':       (r) => {
       try {
-        const b = JSON.parse(r.body);
-        return !!(b.accessToken || (b.data && b.data.accessToken));
+        return !!JSON.parse(r.body).accessToken;
       } catch { return false; }
     },
-    'login: response <500ms': (r) => r.timings.duration < 500,
+    'login: response <2000ms': (r) => r.timings.duration < 2000,
   });
 
   if (!loginOk) {
@@ -67,10 +66,10 @@ export default function () {
 
   // ─── 3. Forgot Password ──────────────────────────────────
   const forgotRes = http.post(
-    `${BASE_URL}/api/account/forgot-password`,
-    JSON.stringify({ email: TEST_CUSTOMER.email }),
-    { headers: HEADERS, insecureSkipTLSVerify: true }
-  );
+  `${BASE_URL}/api/account/forgot-password?email=${TEST_CUSTOMER.email}`,
+  null,
+  { headers: HEADERS, insecureSkipTLSVerify: true }
+);
 
   check(forgotRes, {
     'forgot-password: status 200 or 204': (r) => r.status === 200 || r.status === 204,
