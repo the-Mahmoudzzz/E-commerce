@@ -1,5 +1,5 @@
 
-export const BASE_URL = 'https://localhost:44323';
+export const BASE_URL = 'http://mye-commerceapp.runasp.net';
 // شروط النجاح — لو أي شرط اتكسر الـ test هيفشل
 export const thresholds = {
   http_req_duration: ['p(95)<800'],  // 95% من الـ requests تحت 800ms
@@ -8,7 +8,7 @@ export const thresholds = {
  
 // بيانات تجريبية — غيّرها لبيانات موجودة عندك في الـ DB
 export const TEST_CUSTOMER = {
-  email:    'Customer@gmail.come.com',   // ← غيّر لـ email موجود
+  email:    'TesTCustomer@gmail.com',   // ← غيّر لـ email موجود
   password: 'String12*',        // ← غيّر للـ password الصح
 };
  
@@ -18,7 +18,7 @@ export const TEST_SELLER = {
 };
  
 export const TEST_ADMIN = {
-  email:    'admin@test.com',      // ← غيّر لـ email موجود
+  email:    'mhmmoud289@gmail.com',      // ← غيّر لـ email موجود
   password: 'String12*',
 };
  
