@@ -1,8 +1,11 @@
 ﻿using e_commerce.app.Dto.PayMentDTO;
+using e_commerce.app.Services.Implementation;
 using e_commerce.app.Services.IServices;
+using e_commerce.core.entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace e_commerce.api.Controllers
 {
@@ -12,10 +15,14 @@ namespace e_commerce.api.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _service;
+        private readonly IPaymobService _paymobservice;
+        private readonly ILogger<PaymentController> _logger;
 
-        public PaymentController(IPaymentService service)
+        public PaymentController(IPaymentService service, IPaymobService paymobservice, ILogger<PaymentController> logger)
         {
             _service = service;
+            _paymobservice = paymobservice;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -25,11 +32,23 @@ namespace e_commerce.api.Controllers
             return Ok(result);
         }
 
-        [HttpPost("callback")]
         [AllowAnonymous]
-        public async Task<IActionResult> Callback([FromBody] PaymobCallbackDto dto)
+        [HttpPost("webhook")]
+        public async Task<IActionResult> PaymobWebhook([FromQuery] string hmac, [FromBody] PaymobCallbackDto callbackData)
         {
-            await _service.HandleCallbackAsync(dto);
+            
+            if (string.IsNullOrEmpty(hmac))
+                return Unauthorized("HMAC is missing.");
+
+            
+            bool isValid = await _paymobservice.ValidateHmac(callbackData,hmac);
+
+            if (!isValid)
+            {
+                _logger.LogWarning("Invalid HMAC received for Order: {OrderId}", callbackData.Obj.Order.Id);
+                return Unauthorized("Invalid HMAC Signature."); 
+            }
+            await _service.HandleCallbackAsync(callbackData);
             return Ok();
         }
     }

@@ -1,7 +1,10 @@
-﻿using e_commerce.app.Services.IServices;
+﻿using e_commerce.app.Dto.PayMentDTO;
+using e_commerce.app.Services.IServices;
 using e_commerce.core.Exceptions;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 public class PaymobService : IPaymobService
@@ -122,4 +125,44 @@ public class PaymobService : IPaymobService
 
         return tokenProp.GetString()!;
     }
+    public async Task< bool> ValidateHmac(PaymobCallbackDto callback, string receivedHmac)
+    {
+        var hmacSecret = _config["Paymob:PaymobHmacSecret"]; // من الـ appsettings
+        var obj = callback.Obj;
+
+        // 1. تجميع الحقول بالترتيب اللي Paymob طالباه (مهم جداً الترتيب ده)
+        // لازم القيم تتحول لـ String. ولو boolean بتبقى "true" أو "false" حروف سمول
+        var concatenatedString =
+            obj.AmountCents.ToString() +
+            obj.CreatedAt +
+            obj.Currency +
+            obj.ErrorOccured.ToString().ToLower() +
+            obj.HasParentTransaction.ToString().ToLower() +
+            obj.Id.ToString() +
+            obj.IntegrationId.ToString() +
+            obj.Is3dSecure.ToString().ToLower() +
+            obj.IsAuth.ToString().ToLower() +
+            obj.IsCapture.ToString().ToLower() +
+            obj.IsRefunded.ToString().ToLower() +
+            obj.IsStandalonePayment.ToString().ToLower() +
+            obj.IsVoided.ToString().ToLower() +
+            obj.Order.Id.ToString() +
+            obj.Owner.ToString() +
+            obj.Pending.ToString().ToLower() +
+            obj.SourceData.Pan +
+            obj.SourceData.SubType +
+            obj.SourceData.Type +
+            obj.Success.ToString().ToLower();
+
+        // 2. عمل Hashing باستخدام HMACSHA512
+        using var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(hmacSecret));
+        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(concatenatedString));
+
+        // 3. تحويل النتيجة لـ Hex String عشان نقارنها
+        var calculatedHmac = BitConverter.ToString(hash).Replace("-", "").ToLower();
+
+        // 4. مقارنة الـ HMAC المحسوب باللي مبعوت من Paymob
+        return calculatedHmac == receivedHmac.ToLower();
+    }
+
 }
