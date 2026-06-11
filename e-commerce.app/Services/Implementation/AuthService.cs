@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Security.Cryptography;
 using System.Text;
+using System.Transactions;
 using Web.App.DTOs;
 using Web.App.Services;
 
@@ -58,22 +59,28 @@ namespace e_commerce.app.Services.Implementation
                 PhoneNumber = dto.PhoneNumber
             };
 
-            var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
-                throw new ValidationException(
-                    "Registration failed.",
-                    new Dictionary<string, string[]>
-                    {
-                        { "Identity", result.Errors.Select(e => e.Description).ToArray() }
-                    });
-
-            if (dto.UserRole == UserRole.User)
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                user.IsApproved = true;
-                await _cartrepo.AddCatToUserAsync(user.Id);
-            }
+                var result = await _userManager.CreateAsync(user, dto.Password);
+                if (!result.Succeeded)
+                    throw new ValidationException(
+                        "Registration failed.",
+                        new Dictionary<string, string[]>
+                        {
+                    { "Identity", result.Errors.Select(e => e.Description).ToArray() }
+                        });
 
-            await _userManager.AddToRoleAsync(user, dto.UserRole.ToString());
+                if (dto.UserRole == UserRole.User)
+                {
+                    user.IsApproved = true;
+                    await _cartrepo.AddCatToUserAsync(user.Id); // Write 2
+                }
+
+                await _userManager.AddToRoleAsync(user, dto.UserRole.ToString()); // Write 3
+
+                // 🚀 كل الداتا بيز تمام؟ اعتمد التغييرات
+                scope.Complete();
+            }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
@@ -131,19 +138,24 @@ namespace e_commerce.app.Services.Implementation
                     IsApproved = true
                 };
 
-                var result = await _userManager.CreateAsync(user);
-                if (!result.Succeeded)
-                    throw new ValidationException(
-                        "Google registration failed.",
-                        new Dictionary<string, string[]>
-                        {
-                            { "Identity", result.Errors.Select(e => e.Description).ToArray() }
-                        });
+                using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                {
+                    var result = await _userManager.CreateAsync(user);
+                    if (!result.Succeeded)
+                        throw new ValidationException("Google registration failed.",
+new Dictionary<string, string[]>
+{
+    { "Identity", result.Errors.Select(e => e.Description).ToArray() }
+});
 
-                await _userManager.AddLoginAsync(user,
-                    new UserLoginInfo("Google", payload.Subject, "Google"));
+                    await _userManager.AddLoginAsync(user, new UserLoginInfo("Google", payload.Subject, "Google"));
+                    await _userManager.AddToRoleAsync(user, "User");
 
-                await _userManager.AddToRoleAsync(user, "User");
+                    var response = await BuildAuthResponseAsync(user); // دي جواها إضافه للـ Refresh Token
+
+                    scope.Complete();
+                    return response;
+                }
             }
             else
             {
@@ -244,20 +256,24 @@ namespace e_commerce.app.Services.Implementation
             if (user.ResetPasswordOTPExpiry < DateTime.UtcNow)
                 throw new BusinessRuleException("OTP has expired. Please request a new one.");
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
 
-            if (!result.Succeeded)
-                throw new ValidationException(
-                    "Password reset failed.",
-                    new Dictionary<string, string[]>
-                    {
-                        { "Password", result.Errors.Select(e => e.Description).ToArray() }
-                    });
+                if (!result.Succeeded)
+                    throw new ValidationException("Password reset failed.",
+                     new Dictionary<string, string[]>
+                         {
+                      { "Password", result.Errors.Select(e => e.Description).ToArray() }
+                       });
 
-            user.ResetPasswordOTP = null;
-            user.ResetPasswordOTPExpiry = null;
-            await _userManager.UpdateAsync(user);
+                user.ResetPasswordOTP = null;
+                user.ResetPasswordOTPExpiry = null;
+                await _userManager.UpdateAsync(user);
+
+                scope.Complete();
+            }
         }
 
         public async Task DeleteAccountAsync(string userId)

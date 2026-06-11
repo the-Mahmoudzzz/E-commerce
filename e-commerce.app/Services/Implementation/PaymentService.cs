@@ -6,6 +6,7 @@ using e_commerce.core.entities;
 using e_commerce.core.Enum;
 using e_commerce.core.Exceptions;          // ← ضيف ده
 using Microsoft.Extensions.Configuration;
+using System.Transactions;
 
 public class PaymentService : IPaymentService
 {
@@ -88,44 +89,49 @@ public class PaymentService : IPaymentService
 
         // ✅ تجاهل لو الـ payment اتعالج قبل كده (idempotency)
         if (payment.Status != PaymentStatus.Pending) return;
-
-        if (data.Obj.Success)
+        using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
         {
-            payment.Status = PaymentStatus.Approved;
-            payment.PaidAt = DateTime.UtcNow;
 
-            var order = await _orderRepo.GetOrderById(payment.OrderId);
-
-            // ✅ لو الأوردر مش موجود نسجل الـ error بس ومنكرهوش
-            if (order != null)
+            if (data.Obj.Success)
             {
-                order.Status = OrderStatus.Processing;
-                await _orderRepo.UpdateOrder(order);
+                payment.Status = PaymentStatus.Approved;
+                payment.PaidAt = DateTime.UtcNow;
 
-                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                var order = await _orderRepo.GetOrderById(payment.OrderId);
+
+                // ✅ لو الأوردر مش موجود نسجل الـ error بس ومنكرهوش
+                if (order != null)
                 {
-                    UserId = order.CustomerId,
-                    Title = "Payment Confirmed",
-                    Message = $"Your payment for order #{order.Id} was successful."
-                });
-            }
-        }
-        else
-        {
-            payment.Status = PaymentStatus.Refused;
+                    order.Status = OrderStatus.Processing;
+                    await _orderRepo.UpdateOrder(order);
 
-            var order = await _orderRepo.GetOrderById(payment.OrderId);
-            if (order != null)
+                    await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                    {
+                        UserId = order.CustomerId,
+                        Title = "Payment Confirmed",
+                        Message = $"Your payment for order #{order.Id} was successful."
+                    });
+                }
+            }
+            else
             {
-                await _notificationService.AddNotifiAsync(new CreateNotificationDto
-                {
-                    UserId = order.CustomerId,
-                    Title = "Payment Failed",
-                    Message = $"Your payment for order #{order.Id} was declined. Please try again."
-                });
-            }
-        }
+                payment.Status = PaymentStatus.Refused;
 
-        await _repo.UpdateAsync(payment);
+                var order = await _orderRepo.GetOrderById(payment.OrderId);
+                if (order != null)
+                {
+                    await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                    {
+                        UserId = order.CustomerId,
+                        Title = "Payment Failed",
+                        Message = $"Your payment for order #{order.Id} was declined. Please try again."
+                    });
+                }
+            }
+
+            await _repo.UpdateAsync(payment);
+            scope.Complete();
+                
+        }
     }
 }

@@ -9,6 +9,7 @@ using e_commerce.core.Enum;
 using e_commerce.core.Exceptions;          // ← ضيف ده
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System.Transactions;
 
 namespace e_commerce.app.Services.Implementation
 {
@@ -122,17 +123,23 @@ namespace e_commerce.app.Services.Implementation
                 CreatedAt = DateTime.UtcNow,
                 OrderDetails = orderDetails
             };
-
-            await _orderRepo.CreateOrderAsync(order);
-
-            await _notificationService.AddNotifiAsync(new CreateNotificationDto
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                UserId = userId,
-                Title = "Order Confirmed",
-                Message = $"Your order #{order.Id} has been placed successfully."
-            });
+                // 1. كريت الأوردر
+                await _orderRepo.CreateOrderAsync(order);
 
-            await _cartRepo.DeleteCartItemsAsync(userId);
+                // 2. امسح السلة
+                await _cartRepo.DeleteCartItemsAsync(userId);
+
+                // 3. ضيف النوتيفيكيشن
+                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                {
+                    UserId = userId,
+                    Title = "Order Confirmed",
+                    Message = $"Your order #{order.Id} has been placed successfully."
+                });
+                scope.Complete();
+            }
         }
 
         public async Task CancelOrder(int customerId, int orderId)
@@ -167,25 +174,30 @@ namespace e_commerce.app.Services.Implementation
                 .Select(i => i.Product.SellerId)
                 .Distinct();
 
-            foreach (var sellerId in sellerIds)
+            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+                foreach (var sellerId in sellerIds)
+                {
+                    await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                    {
+                        UserId = sellerId,
+                        Title = "Order Canceled",
+                        Message = $"Order #{order.Id} has been canceled by the customer."
+                    });
+                }
+
+                // إبعت نوتيفيكيشن للكاستمر
                 await _notificationService.AddNotifiAsync(new CreateNotificationDto
                 {
-                    UserId = sellerId,
+                    UserId = customerId,
                     Title = "Order Canceled",
-                    Message = $"Order #{order.Id} has been canceled by the customer."
+                    Message = $"Your order #{order.Id} has been canceled successfully."
                 });
+
+                await _orderRepo.UpdateOrder(order);
+
+                scope.Complete();
             }
-
-            // إبعت نوتيفيكيشن للكاستمر
-            await _notificationService.AddNotifiAsync(new CreateNotificationDto
-            {
-                UserId = customerId,
-                Title = "Order Canceled",
-                Message = $"Your order #{order.Id} has been canceled successfully."
-            });
-
-            await _orderRepo.UpdateOrder(order);
         }
 
         public async Task<IReadOnlyList<OrderDTO>> GetOrderByCustomerId(int customerId)
