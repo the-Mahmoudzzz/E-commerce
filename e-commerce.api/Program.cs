@@ -10,6 +10,7 @@ using e_commerce.app.Services.Implementation;
 using e_commerce.app.Services.IServices;
 using e_commerce.app.servieses.impelmentaion;
 using e_commerce.app.servieses.iserviese;
+using e_commerce.app.Workers;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using e_commerce.infra.reposatory;
@@ -168,11 +169,15 @@ namespace e_commerce.api
             builder.Services.AddScoped<ISellerWalletService, SellerWalletService>();
             builder.Services.AddScoped<ISellerService, SellerService>();
             builder.Services.AddScoped<ISellerRepository, SellerRepository>();
+            builder.Services.AddScoped<ISendEmailService, SendEmailService>();
             builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddScoped<IAdminService, AdminService>();
 
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+
+            builder.Services.AddHostedService<EmailBackgroundWorker>();
+            builder.Services.AddSingleton<IEmailChannel, EmailChannel>();
 
             
             builder.Services.AddScoped<IPhotoService, PhotoService>();

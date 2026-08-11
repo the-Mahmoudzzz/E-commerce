@@ -21,7 +21,8 @@ namespace e_commerce.app.Services.Implementation
         private readonly UserManager<User> _userManager;
         private readonly IRefreshTokenRepository _refreshRepo;
         private readonly GetTokenServices _tokenService;
-        private readonly SendEmailService _emailService;
+        private readonly IEmailChannel _emailChannel;
+        private readonly ISendEmailService _emailService;
         private readonly GoogleTokenValidator _googleTokenValidator;
         private readonly IShoppingCartRepo _cartrepo;
 
@@ -29,16 +30,18 @@ namespace e_commerce.app.Services.Implementation
             UserManager<User> userManager,
             IRefreshTokenRepository refreshRepo,
             GetTokenServices tokenService,
-            SendEmailService emailService,
+            IEmailChannel emailChannel,
             GoogleTokenValidator googleTokenValidator,
-            IShoppingCartRepo cartrepo)
+            IShoppingCartRepo cartrepo,
+            ISendEmailService emailService)
         {
             _userManager = userManager;
             _refreshRepo = refreshRepo;
             _tokenService = tokenService;
-            _emailService = emailService;
+            _emailChannel = emailChannel;
             _googleTokenValidator = googleTokenValidator;
             _cartrepo = cartrepo;
+            _emailService = emailService;
         }
 
         public async Task RegisterAsync(RegisterDTO dto, string baseUrl)
@@ -86,10 +89,8 @@ namespace e_commerce.app.Services.Implementation
             var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             var link = $"{baseUrl}/api/account/confirm-email?email={user.Email}&code={code}";
 
-            _emailService.SendEmail(
-                user.Email,
-                "Confirm Your Account",
-                $"Click <a href='{link}'>here</a> to confirm your email.");
+            var userEvent = new UserRegisteredEvent(user.Email, user.UserName, dto.UserRole.ToString(), link);
+            await _emailChannel.AddEmailTaskAsync(userEvent);
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDTO dto)
@@ -237,10 +238,11 @@ new Dictionary<string, string[]>
 
             await _userManager.UpdateAsync(user);
 
-            _emailService.SendEmail(
+            await _emailService.SendEmailAsync(
                 user.Email,
                 "Reset Password OTP",
-                $"OTP: <b>{otp}</b> (valid for 10 minutes)");
+                $"OTP: <b>{otp}</b> (valid for 10 minutes)",
+                CancellationToken.None);
         }
 
         public async Task ResetPasswordAsync(string email, string otp, string newPassword)
