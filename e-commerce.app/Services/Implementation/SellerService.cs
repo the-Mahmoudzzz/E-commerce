@@ -33,12 +33,12 @@ namespace e_commerce.app.Services.Implementation
             return int.Parse(userIdClaim);
         }
 
-        public async Task<SellerDashboardDto> GetDashboardAsync()
+        public async Task<SellerDashboardDto> GetDashboardAsync(PaginationParamsDto pagination)
         {
             var sellerId = GetCurrentSellerId();
 
-            var orders = await _sellerRepo.GetSellerOrdersAsync(sellerId);
-            var items = await _sellerRepo.GetSellerOrderDetailsAsync(sellerId);
+            var orders = await _sellerRepo.GetSellerOrdersAsync(sellerId, pagination);
+            var items = await _sellerRepo.GetSellerOrderDetailsAsync(sellerId, pagination);
 
             // ✅ مش error لو مفيش أوردرات — بس نرجع zeros
             var totalRevenue = orders.Any() ? orders.Sum(o => o.FinalAmount) : 0;
@@ -64,11 +64,11 @@ namespace e_commerce.app.Services.Implementation
             };
         }
 
-        public async Task<SellerEarningsDto> GetEarningsAsync()
+        public async Task<SellerEarningsDto> GetEarningsAsync(PaginationParamsDto pagination)
         {
             var sellerId = GetCurrentSellerId();
 
-            var orders = await _sellerRepo.GetSellerOrdersAsync(sellerId);
+            var orders = await _sellerRepo.GetSellerOrdersAsync(sellerId, pagination);
 
             var transactions = orders.Select(o => new EarningTransactionDto
             {

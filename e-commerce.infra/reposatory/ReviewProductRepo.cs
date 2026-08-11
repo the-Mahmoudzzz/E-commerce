@@ -1,7 +1,9 @@
-﻿using e_commerce.app.Interfaces;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -47,9 +49,9 @@ namespace e_commerce.infra.reposatory
             
         }
 
-        public async Task<IEnumerable<ProductReview>> GetByProductIdAsync(int productId, bool onlyApproved = true)
+        public async Task<IEnumerable<ProductReview>> GetByProductIdAsync([FromQuery] PaginationParamsDto pagination, int productId, bool onlyApproved = true)
         {
-            var ProductReview = _appContext.ProductReviews
+            var ProductReview = _appContext.ProductReviews.AsNoTracking()
       .Where(r => r.ProductId == productId);
 
             if (onlyApproved)
@@ -57,7 +59,7 @@ namespace e_commerce.infra.reposatory
                 ProductReview = ProductReview.Where(r => r.IsApproved);
             }
                 return await ProductReview
-                    .OrderByDescending(r => r.CreateAt)
+                    .OrderByDescending(r => r.CreateAt).Skip((pagination.PageNumber - 1) * pagination.PageSize).Take(pagination.PageSize)
                     .ToListAsync();
         }
 

@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.NotificationDto;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.NotificationDto;
 using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace e_commerce.app.Services.IServices
 {
     public interface INotificationService
     {
-        Task<IEnumerable<NotifcationDto>> GetALLAsync();
+        Task<IEnumerable<NotifcationDto>> GetALLAsync(PaginationParamsDto pagination);
         Task<IEnumerable<NotifcationDto>> GetALLUserNotifiAsync(int userid);
         Task<NotifcationDto> GetByidAsync(int id);
         Task AddNotifiAsync(CreateNotificationDto notification);

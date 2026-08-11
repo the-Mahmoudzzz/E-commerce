@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.FeedBackDTO;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.FeedBackDTO;
 using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace e_commerce.app.Services.IServices
     public interface IFeedbackService
     {
         Task CreateAsync(CreateFeedbackDto createFeedbackDto);
-        Task<IEnumerable<FeedBackDTO>> GetAllAsync();
+        Task<IEnumerable<FeedBackDTO>> GetAllAsync(PaginationParamsDto pagination);
         Task<IEnumerable<FeedBackDTO>> GetByTypeAsync(FeedbackType feedbackType);
     }
 }

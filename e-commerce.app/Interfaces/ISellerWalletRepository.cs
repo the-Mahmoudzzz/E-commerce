@@ -1,4 +1,5 @@
-﻿using e_commerce.core.entities;
+﻿using e_commerce.app.Dto;
+using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

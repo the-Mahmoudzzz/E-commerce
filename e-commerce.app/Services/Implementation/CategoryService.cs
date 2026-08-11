@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.CtegoriesDto;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.Cashe;
@@ -60,34 +61,15 @@ namespace e_commerce.app.Services.Implementation
            await repo.DeleteAsync(id);
         }
 
-        async Task<IEnumerable<CategoryDto>> ICategoryService.GetAllAsync()
+        public async Task<IEnumerable<Category>> GetAllAsync(
+    PaginationParamsDto pagination)
         {
-            // 1. خلينا الـ Key عام لكل الناس مش مربوط بيوزر معين
-            string cacheKey = "Categories_All";
-
-            // 2. ظبطنا الـ Type عشان يرجع IEnumerable
-            var cachedData = await _redis.GetTData<IEnumerable<CategoryDto>>(cacheKey);
-
-            if (cachedData is not null && cachedData.Any())
-            {
-                return cachedData;
-            }
-
-            // 3. لو مش في الكاش، هاته من الداتا بيز
-            var categories = await repo.GetAllAsync();
-
-            // 4. اعمل الـ Mapping مرة واحدة بس
-            var mappedCategories = mapper.Map<IEnumerable<CategoryDto>>(categories);
-
-            
-             _redis.SetData(cacheKey, mappedCategories);
-
-            return mappedCategories;
+            return await repo.GetAllAsync(pagination);
         }
 
-        async Task<IEnumerable<SubCategoryDto>> ICategoryService.GetAllSubCategoryAsync()
+        async Task<IEnumerable<SubCategoryDto>> ICategoryService.GetAllSubCategoryAsync(PaginationParamsDto pagination)
         {
-            var categories = await repo.GetAllSubAsync();
+            var categories = await repo.GetAllSubAsync(pagination);
             return mapper.Map<IEnumerable<SubCategoryDto>>(categories);
         }
 

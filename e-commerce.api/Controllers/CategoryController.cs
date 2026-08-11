@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.CtegoriesDto;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.CtegoriesDto;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
 using Microsoft.AspNetCore.Authorization;
@@ -20,15 +21,20 @@ namespace e_commerce.api.Controllers
             this.categoryService = categoryService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAll() { 
-            var Categotis=  await categoryService.GetAllAsync();
-            return Ok(Categotis);
+        [HttpGet]
+        public async Task<IActionResult> GetAll(
+            [FromQuery] PaginationParamsDto pagination)
+        {
+            var categories =
+                await categoryService.GetAllAsync(pagination);
+
+            return Ok(categories);
         }
         [HttpGet("Sub")]
-        public async Task<IActionResult> GetAllSub()
+        public async Task<IActionResult> GetAllSub([FromQuery] PaginationParamsDto pagination)
         {
-            var Categotis = await categoryService.GetAllSubCategoryAsync();
-            return Ok(Categotis);
+            var Categoris = await categoryService.GetAllSubCategoryAsync(pagination);
+            return Ok(Categoris);
         }
         [HttpGet("type/")]
         public async Task<IActionResult> Get(int id) { 

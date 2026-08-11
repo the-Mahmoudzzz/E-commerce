@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Interfaces;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
 using Microsoft.EntityFrameworkCore;
@@ -36,9 +37,9 @@ namespace e_commerce.infra.reposatory
             }
         }
 
-        public async Task<IEnumerable<Notification>> GetALLAsync()
+        public async Task<IEnumerable<Notification>> GetALLAsync(PaginationParamsDto pagination)
         {
-            return await _con.notifications.ToListAsync();
+            return await _con.notifications.OrderBy(n => n.Id).Skip((pagination.PageNumber - 1) * pagination.PageSize).Take(pagination.PageSize).ToListAsync();
         }
 
         public async Task<IEnumerable<Notification>> GetALLUserNotifiAsync(int userid)
