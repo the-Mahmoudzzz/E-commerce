@@ -1,0 +1,1 @@
+public record UserRegisteredEvent(string Email, string FullName, string Role, string ConfirmationLink);
