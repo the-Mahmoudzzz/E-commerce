@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using e_commerce.app.Dto.CtegoriesDto;
 using e_commerce.app.Interfaces;
+using e_commerce.app.Services.Cashe;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,15 +19,28 @@ namespace e_commerce.app.Services.Implementation
     {
         private readonly ICategoryRepo repo;
         private readonly IMapper mapper;
+        private readonly IRedisCahse _redis;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CategoryService(ICategoryRepo repo ,IMapper mapper)
+
+        public CategoryService(ICategoryRepo repo, IMapper mapper, IRedisCahse redis, IHttpContextAccessor httpContextAccessor)
         {
             this.repo = repo;
 
-         this.mapper = mapper;
-            
+            this.mapper = mapper;
+            _redis = redis;
+            _httpContextAccessor = httpContextAccessor;
         }
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new AuthenticationException("User is not authenticated.");
+
+            return int.Parse(userIdClaim);
+        }
 
         async Task ICategoryService.AddAsync(CreateCategoryDto categoryDto)
         {
@@ -45,8 +62,27 @@ namespace e_commerce.app.Services.Implementation
 
         async Task<IEnumerable<CategoryDto>> ICategoryService.GetAllAsync()
         {
-            var categories=await repo.GetAllAsync();
-            return  mapper.Map<IEnumerable<CategoryDto>>(categories);
+            // 1. خلينا الـ Key عام لكل الناس مش مربوط بيوزر معين
+            string cacheKey = "Categories_All";
+
+            // 2. ظبطنا الـ Type عشان يرجع IEnumerable
+            var cachedData = await _redis.GetTData<IEnumerable<CategoryDto>>(cacheKey);
+
+            if (cachedData is not null && cachedData.Any())
+            {
+                return cachedData;
+            }
+
+            // 3. لو مش في الكاش، هاته من الداتا بيز
+            var categories = await repo.GetAllAsync();
+
+            // 4. اعمل الـ Mapping مرة واحدة بس
+            var mappedCategories = mapper.Map<IEnumerable<CategoryDto>>(categories);
+
+            // 5. احفظ في الكاش (وباصينا الـ Key الأول وبعدين الداتا)
+            await _redis.SetData(mappedCategories,cacheKey);
+
+            return mappedCategories;
         }
 
         async Task<IEnumerable<SubCategoryDto>> ICategoryService.GetAllSubCategoryAsync()

@@ -4,6 +4,7 @@ using e_commerce.app.External;
 using e_commerce.app.interfaces;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Mapping;
+using e_commerce.app.Services.Cashe;
 using e_commerce.app.Services.ExternalService;
 using e_commerce.app.Services.Implementation;
 using e_commerce.app.Services.IServices;
@@ -40,6 +41,13 @@ namespace e_commerce.api
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<AppDbContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
+
+            builder.Services.AddStackExchangeRedisCache(op =>
+            {
+                op.Configuration = builder.Configuration.GetConnectionString("Redis");
+            });
+
+
             builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -137,10 +145,12 @@ namespace e_commerce.api
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IPaymobService, PaymobService>();
+            builder.Services.AddScoped<IRedisCahse,RedisCahse>();
 
             builder.Services.AddHttpClient<IPaymobService, PaymobService>();
 
             builder.Services.AddAutoMapper(typeof(NotificationProfile));
+
 
             builder.Services.AddSignalR();
 

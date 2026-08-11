@@ -39,6 +39,7 @@ namespace e_commerce.infra.reposatory
 
         async Task<IEnumerable<Category>> ICategoryRepo.GetAllAsync()
         {
+        
             return await con.categories.ToListAsync();
         }
 

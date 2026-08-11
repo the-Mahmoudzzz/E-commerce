@@ -1,28 +1,44 @@
-using e_commerce.app.Dto.ProductDto;
+﻿using e_commerce.app.Dto.ProductDto;
 using e_commerce.app.interfaces;
 using e_commerce.app.servieses.iserviese;
 using e_commerce.core.entities;
-using e_commerce.core.Exceptions;          // ? ??? ??
+using e_commerce.core.Exceptions;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;          // ? ??? ??
 
 namespace e_commerce.app.servieses.impelmentaion
 {
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
+        private readonly IDistributedCache _distributedCache;
 
-        public ProductService(IProductRepository productRepository)
+        public ProductService(IProductRepository productRepository, IDistributedCache distributedCache)
         {
             _productRepository = productRepository;
+            _distributedCache = distributedCache;
         }
 
         public async Task<ProductDto> GetByIdAsync(int id)
         {
+            // 1. ظبطنا اسم الـ Key
+            string key = $"product_{id}";
+            string cachedMember = await _distributedCache.GetStringAsync(key);
+
+            // الغلطة الأولى والثانية اتصلحوا هنا: لو الكاش "مش" فاضي، فكه لـ ProductDto ورجعه
+            if (!string.IsNullOrEmpty(cachedMember))
+            {
+                return JsonConvert.DeserializeObject<ProductDto>(cachedMember);
+            }
+
+            // 2. لو مش في الكاش، هاته من الداتا بيز
             var product = await _productRepository.GetByIdAsync(id);
 
             if (product == null)
                 throw new NotFoundException("Product", id);
 
-            return new ProductDto
+            // 3. اعمل الـ Mapping بتاعك للـ DTO
+            var productDto = new ProductDto
             {
                 Id = product.Id,
                 Name = product.Name,
@@ -34,10 +50,24 @@ namespace e_commerce.app.servieses.impelmentaion
                 IsApproved = product.IsApproved,
                 CreatedAt = product.CreatedAt,
                 CategoryId = product.CategoryId,
-                CategoryName = product.Category.Name,
+                CategoryName = product.Category?.Name, // حطينا ? أمان عشان لو بـ null
                 SellerId = product.SellerId,
-                SellerName = product.Seller.UserName
+                SellerName = product.Seller?.UserName  // حطينا ? أمان
             };
+
+            // الغلطة التالتة اتصلحت هنا: احفظ الـ DTO في الكاش قبل ما ترجعه!
+            var jsonToCache = JsonConvert.SerializeObject(productDto);
+
+            // (اختياري بس مهم) ندي الداتا دي وقت وتتمسح لوحدها، مثلاً بعد ساعة
+            var cacheOptions = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1)
+            };
+
+            await _distributedCache.SetStringAsync(key, jsonToCache, cacheOptions);
+
+            // 4. رجع النتيجة في النهاية
+            return productDto;
         }
 
         public async Task<IEnumerable<summaryProductDto>> GetAllAsync()
