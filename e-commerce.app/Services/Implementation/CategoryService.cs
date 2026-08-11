@@ -79,8 +79,8 @@ namespace e_commerce.app.Services.Implementation
             // 4. اعمل الـ Mapping مرة واحدة بس
             var mappedCategories = mapper.Map<IEnumerable<CategoryDto>>(categories);
 
-            // 5. احفظ في الكاش (وباصينا الـ Key الأول وبعدين الداتا)
-            await _redis.SetData(mappedCategories,cacheKey);
+            
+             _redis.SetData(cacheKey, mappedCategories);
 
             return mappedCategories;
         }

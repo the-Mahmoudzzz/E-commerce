@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using e_commerce.app.Dto.CtegoriesDto;
 
 namespace e_commerce.app.Services.Cashe
 {
@@ -31,14 +32,16 @@ namespace e_commerce.app.Services.Cashe
             return default(T?);
         }
 
-        public void SetData<T>(string key, T value)
+        public async Task SetData<T>(string key, T value)
         {
             var op = new DistributedCacheEntryOptions()
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(6)
             };
 
-            _cache.SetString(key, System.Text.Json.JsonSerializer.Serialize(value),op);
+             await _cache.SetStringAsync(key, System.Text.Json.JsonSerializer.Serialize(value),op);
         }
+
+        
     }
 }
