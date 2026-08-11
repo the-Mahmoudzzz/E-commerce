@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.FeedBackDTO;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.FeedBackDTO;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
 using Microsoft.AspNetCore.Authorization;
@@ -33,10 +34,10 @@ namespace e_commerce.api.Controllers
         }
         [HttpGet]
         [Authorize(Roles ="Admin")]
-        public async Task<IActionResult> GetAll() { 
+        public async Task<IActionResult> GetAll([FromQuery] PaginationParamsDto pagination) { 
         
         
-            var result=  await feedbackService.GetAllAsync();
+            var result=  await feedbackService.GetAllAsync(pagination);
             return Ok(result);
         }
 

@@ -1,3 +1,4 @@
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.ProductDto;
 using e_commerce.core.entities;
 using System;
@@ -12,8 +13,8 @@ namespace e_commerce.app.servieses.iserviese
     {
  
             Task<ProductDto> GetByIdAsync(int id);
-            Task<IEnumerable<summaryProductDto>> GetAllAsync();
-            Task<IEnumerable<summaryProductDto>> GetBySellerAsync(int sellerId);
+            Task<IEnumerable<summaryProductDto>> GetAllAsync(PaginationParamsDto pagination);
+            Task<IEnumerable<summaryProductDto>> GetBySellerAsync(int sellerId, PaginationParamsDto pagination);
             Task AddProductAsync(CreateProductBySellerDto dto, int sellerId);
             Task UpdateProductAsync(int id, UpdateProductBySellerDto dto, int currentSellerId);
             Task ApproveProductAsync(int id, ApproveProductByAdminDto dto);

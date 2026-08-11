@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.NotificationDto;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.NotificationDto;
 using e_commerce.app.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,9 +22,9 @@ namespace e_commerce.api.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllNotification()
+        public async Task<IActionResult> GetAllNotification([FromQuery] PaginationParamsDto pagination)
         {
-            return Ok(await _notificationService.GetALLAsync());
+            return Ok(await _notificationService.GetALLAsync(pagination));
         }
 
         [HttpGet("{id}")]

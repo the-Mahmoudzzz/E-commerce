@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.CtegoriesDto;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.CtegoriesDto;
 using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,9 @@ namespace e_commerce.app.Services.IServices
     {
         Task AddAsync(CreateCategoryDto category);
         Task AddSubCategoryAsync(CreateSubCategoryDto category);
-        Task<IEnumerable<CategoryDto>> GetAllAsync();
-        Task<IEnumerable<SubCategoryDto>> GetAllSubCategoryAsync();
+        Task<IEnumerable<Category>> GetAllAsync(
+            PaginationParamsDto pagination);
+        Task<IEnumerable<SubCategoryDto>> GetAllSubCategoryAsync(PaginationParamsDto pagination);
         Task<CategoryDto> GetbyIdAsync(int id);
         Task<SubCategoryDto> GetbyIdSubCategoryAsync(int id);
         Task<Category> UpdateAsync(CreateCategoryDto category);

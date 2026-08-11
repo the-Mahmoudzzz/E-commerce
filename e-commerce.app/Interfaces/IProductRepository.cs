@@ -1,4 +1,5 @@
-﻿using e_commerce.app.Dto.ProductDto;
+﻿using e_commerce.app.Dto;
+using e_commerce.app.Dto.ProductDto;
 using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace e_commerce.app.interfaces
     {
         Task<Product?> GetByIdAsync(int id);
 
-        Task<IEnumerable<Product>> GetAllAsync();
+        Task<IEnumerable<Product>> GetAllAsync(PaginationParamsDto pagination);
 
         Task AddAsync(Product product);
 
@@ -20,9 +21,9 @@ namespace e_commerce.app.interfaces
 
         Task DeleteAsync(int id);
 
-        Task<IEnumerable<Product>> GetByCategoryAsync(int categoryId);
+        Task<IEnumerable<Product>> GetByCategoryAsync(int categoryId, PaginationParamsDto pagination);
 
-        Task<IEnumerable<Product>> GetBySellerAsync(int sellerId);
+        Task<IEnumerable<Product>> GetBySellerAsync(int sellerId, PaginationParamsDto pagination);
 
         Task<IReadOnlyList<Product>> GetProductsByIdsAsync(IEnumerable<int> productIds);
         Task<(IEnumerable<Product> Products, int TotalCount)> SearchAsync(ProductSearchDto searchParams);

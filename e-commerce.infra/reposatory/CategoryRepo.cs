@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using e_commerce.app.Interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
+using e_commerce.app.Dto;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -37,15 +38,28 @@ namespace e_commerce.infra.reposatory
             }
         }
 
-        async Task<IEnumerable<Category>> ICategoryRepo.GetAllAsync()
+          public async Task<IEnumerable<Category>> GetAllAsync(
+            PaginationParamsDto pagination)
         {
-        
-            return await con.categories.ToListAsync();
+            return await con.categories
+                .AsNoTracking()
+                .OrderBy(c => c.Id)
+                .Skip((pagination.PageNumber - 1)
+                      * pagination.PageSize)
+                .Take(pagination.PageSize)
+                .ToListAsync();
         }
 
-        async Task<IEnumerable<Category>> ICategoryRepo.GetAllSubAsync()
+        async Task<IEnumerable<Category>> ICategoryRepo.GetAllSubAsync(PaginationParamsDto pagination)
         {
-            return await con.categories.Include(s=>s.ParentCategory).Where(s=>s.ParentCategoryId!=null).ToListAsync();
+            return await con.categories
+      .AsNoTracking()
+      .Where(c => c.ParentCategoryId != null)
+      .Include(c => c.ParentCategory)
+      .OrderBy(c => c.Id)
+      .Skip((pagination.PageNumber - 1) * pagination.PageSize)
+      .Take(pagination.PageSize)
+      .ToListAsync();
         }
 
         Task<Category> ICategoryRepo.GetbyIdAsync(int id)

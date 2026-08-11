@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CloudinaryDotNet.Actions;
+using e_commerce.app.Dto;
 using e_commerce.app.Interfaces;
 using e_commerce.core.entities;
 using e_commerce.infra.Data;
@@ -24,9 +26,9 @@ namespace e_commerce.infra.reposatory
             await appDbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Feedback>> GetAllAsync()
+        public async Task<IEnumerable<Feedback>> GetAllAsync(PaginationParamsDto pagination)
         {
-           return await appDbContext.Feedbacks.Include(f=>f.Customer).OrderByDescending(f=>f.CreatedAt).ToListAsync();
+           return await appDbContext.Feedbacks.AsNoTracking().Include(f=>f.Customer).OrderByDescending(f=>f.CreatedAt).OrderBy(f=>f.Id).Skip((pagination.PageNumber-1)*pagination.PageSize).Take(pagination.PageSize).ToListAsync();
         }
 
         public async Task<IEnumerable<Feedback>> GetByTypeAsync(FeedbackType feedbackType)

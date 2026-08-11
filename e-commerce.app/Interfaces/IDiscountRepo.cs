@@ -1,4 +1,5 @@
-﻿using e_commerce.core.entities;
+﻿using e_commerce.app.Dto;
+using e_commerce.core.entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace e_commerce.app.Interfaces
     {
         Task<Discount> GetByIdAsync(int id);
 
-        Task<IReadOnlyList<Discount>> GetAllAsync();
+        Task<IReadOnlyList<Discount>> GetAllAsync(PaginationParamsDto pagination);
 
         Task<Discount> GetActiveDiscountByCodeAsync(string code);
 

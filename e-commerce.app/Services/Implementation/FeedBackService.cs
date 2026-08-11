@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using e_commerce.app.Dto;
 using e_commerce.app.Dto.FeedBackDTO;
 using e_commerce.app.Interfaces;
 using e_commerce.app.Services.IServices;
@@ -32,9 +33,9 @@ namespace e_commerce.app.Services.Implementation
             await _feedBackRepo.AddAsync(feedback);
         }
 
-        public async Task<IEnumerable<FeedBackDTO>> GetAllAsync()
+        public async Task<IEnumerable<FeedBackDTO>> GetAllAsync(PaginationParamsDto pagination)
         {
-            var feedbacks = await _feedBackRepo.GetAllAsync();
+            var feedbacks = await _feedBackRepo.GetAllAsync(pagination);
             return _mapper.Map<IEnumerable<FeedBackDTO>>(feedbacks);
         }
 
