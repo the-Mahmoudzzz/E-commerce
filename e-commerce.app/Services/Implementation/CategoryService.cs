@@ -2,11 +2,15 @@
 using e_commerce.app.Dto;
 using e_commerce.app.Dto.CtegoriesDto;
 using e_commerce.app.Interfaces;
+using e_commerce.app.Services.Cashe;
 using e_commerce.app.Services.IServices;
 using e_commerce.core.entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,15 +20,28 @@ namespace e_commerce.app.Services.Implementation
     {
         private readonly ICategoryRepo repo;
         private readonly IMapper mapper;
+        private readonly IRedisCahse _redis;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CategoryService(ICategoryRepo repo ,IMapper mapper)
+
+        public CategoryService(ICategoryRepo repo, IMapper mapper, IRedisCahse redis, IHttpContextAccessor httpContextAccessor)
         {
             this.repo = repo;
 
-         this.mapper = mapper;
-            
+            this.mapper = mapper;
+            _redis = redis;
+            _httpContextAccessor = httpContextAccessor;
         }
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new AuthenticationException("User is not authenticated.");
+
+            return int.Parse(userIdClaim);
+        }
 
         async Task ICategoryService.AddAsync(CreateCategoryDto categoryDto)
         {
