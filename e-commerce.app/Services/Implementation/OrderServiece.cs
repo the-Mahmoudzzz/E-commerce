@@ -22,7 +22,7 @@ namespace e_commerce.app.Services.Implementation
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IShippingService _shippingService;
         private readonly IDiscountService _discountService;
-        private readonly INotificationService _notificationService;
+        private readonly INotificationChannel _notficationChannel;
         private readonly IProductRepository _productRepository;
 
         public OrderServiece(
@@ -33,8 +33,8 @@ namespace e_commerce.app.Services.Implementation
             IHttpContextAccessor httpContextAccessor,
             IShippingService shippingService,
             IDiscountService discountService,
-            INotificationService notificationService,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            INotificationChannel notficationChannel)
         {
             _orderRepo = orderRepo;
             _cartRepo = cartRepo;
@@ -43,8 +43,8 @@ namespace e_commerce.app.Services.Implementation
             _httpContextAccessor = httpContextAccessor;
             _shippingService = shippingService;
             _discountService = discountService;
-            _notificationService = notificationService;
             _productRepository = productRepository;
+            _notficationChannel = notficationChannel;
         }
 
         // ✅ Helper مشترك عشان نجيب الـ userId من الـ Token في أي مكان
@@ -131,15 +131,14 @@ namespace e_commerce.app.Services.Implementation
                 // 2. امسح السلة
                 await _cartRepo.DeleteCartItemsAsync(userId);
 
-                // 3. ضيف النوتيفيكيشن
-                await _notificationService.AddNotifiAsync(new CreateNotificationDto
-                {
-                    UserId = userId,
-                    Title = "Order Confirmed",
-                    Message = $"Your order #{order.Id} has been placed successfully."
-                });
-                scope.Complete();
+                // 3. ضيف النوتيفيكيش
             }
+            await _notficationChannel.SendNotificationAsync(new NotificationEvent(
+                UserId: userId,
+                Message: $"Your order #{order.Id} has been placed successfully.",
+                Title: "Order Confirmed"
+            ), CancellationToken.None);
+
         }
 
         public async Task CancelOrder(int customerId, int orderId)
@@ -158,45 +157,48 @@ namespace e_commerce.app.Services.Implementation
             if (order.Status != OrderStatus.Pending)
                 throw new BusinessRuleException("Only pending orders can be canceled.");
 
-            order.Status = OrderStatus.Canceled;
-
-            foreach (var item in order.OrderDetails)
-            {
-                item.Status = OrderStatus.Canceled;
-
-                // رجّع المخزون
-                if (item.Product != null)
-                    item.Product.Quantity += item.Quantity;
-            }
-
-            // إبعت نوتيفيكيشن للسيلر/ز
-            var sellerIds = order.OrderDetails
-                .Select(i => i.Product.SellerId)
-                .Distinct();
+            // 1. جهز لستة تشيل النوتيفيكشنز اللي عايزين نبعتها
+            var pendingNotifications = new List<NotificationEvent>();
 
             using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                foreach (var sellerId in sellerIds)
+                order.Status = OrderStatus.Canceled;
+                // رجّع المخزون
+                foreach (var item in order.OrderDetails)
                 {
-                    await _notificationService.AddNotifiAsync(new CreateNotificationDto
-                    {
-                        UserId = sellerId,
-                        Title = "Order Canceled",
-                        Message = $"Order #{order.Id} has been canceled by the customer."
-                    });
+                    item.Status = OrderStatus.Canceled;
+                    if (item.Product != null)
+                        item.Product.Quantity += item.Quantity;
                 }
 
-                // إبعت نوتيفيكيشن للكاستمر
-                await _notificationService.AddNotifiAsync(new CreateNotificationDto
+                // جهز الإشعارات للبائعين
+                var sellerIds = order.OrderDetails.Select(i => i.Product.SellerId).Distinct();
+                foreach (var sellerId in sellerIds)
                 {
-                    UserId = customerId,
-                    Title = "Order Canceled",
-                    Message = $"Your order #{order.Id} has been canceled successfully."
-                });
+                    pendingNotifications.Add(new NotificationEvent(
+                        UserId: sellerId,
+                        Message: $"Order #{order.Id} has been canceled by the customer.",
+                        Title: "Order Canceled"
+                    ));
+                }
+
+                // جهز إشعار العميل
+                pendingNotifications.Add(new NotificationEvent(
+                    UserId: customerId,
+                    Message: $"Your order #{order.Id} has been canceled successfully.",
+                    Title: "Order Canceled"
+                ));
 
                 await _orderRepo.UpdateOrder(order);
 
+                // 🚀 اعتمد التغييرات في الداتابيز
                 scope.Complete();
+            }
+
+            // 2. الداتابيز سييفت؟ ارمي النوتيفيكشنز براحتك بقى في القناة
+            foreach (var notification in pendingNotifications)
+            {
+                await _notficationChannel.SendNotificationAsync(notification, CancellationToken.None);
             }
         }
 

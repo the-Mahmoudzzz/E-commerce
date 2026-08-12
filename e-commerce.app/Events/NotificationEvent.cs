@@ -1,0 +1,1 @@
+public record NotificationEvent(int UserId, string Message, string Title);
