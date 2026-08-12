@@ -1,28 +1,10 @@
 using AutoMapper;
+using e_commerce.api.Extensions;
 using e_commerce.api.Middleware;
 using e_commerce.app.External;
-using e_commerce.app.interfaces;
-using e_commerce.app.Interfaces;
-using e_commerce.app.Mapping;
-using e_commerce.app.Services.Cashe;
-using e_commerce.app.Services.ExternalService;
 using e_commerce.app.Services.Implementation;
 using e_commerce.app.Services.IServices;
-using e_commerce.app.servieses.impelmentaion;
-using e_commerce.app.servieses.iserviese;
-using e_commerce.app.Workers;
-using e_commerce.core.entities;
-using e_commerce.infra.Data;
-using e_commerce.infra.reposatory;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Text;
-using Web.App.Services;
 
 
 
@@ -40,147 +22,10 @@ namespace e_commerce.api
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddDbContext<AppDbContext>(options =>
-             options.UseSqlServer(builder.Configuration.GetConnectionString("cs")));
-
-            builder.Services.AddStackExchangeRedisCache(op =>
-            {
-                op.Configuration = builder.Configuration.GetConnectionString("Redis");
-            });
-
-
-            builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.User.RequireUniqueEmail = true;
-            }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
-            builder.Services.AddAuthentication(op =>
-
-            {
-                op.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                op.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }
-            ).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, op=>
-            {
-                var JwtSetting = builder.Configuration.GetSection("JWT");
-                op.TokenValidationParameters = new TokenValidationParameters { 
-                ValidateIssuer= true,
-                ValidateAudience= true,
-                ValidateLifetime= true,
-               ValidIssuer = JwtSetting["Issuar"],
-               ValidAudience = JwtSetting["Audiance"],
-               ValidateIssuerSigningKey= true,
-               IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSetting["Key"]))
-                
-                };
             
-            });
-            builder.Services.AddSwaggerGen(option =>
-            {
-                option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
-                option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    In = ParameterLocation.Header,
-                    Description = "Please enter a valid token",
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.Http,
-                    BearerFormat = "JWT",
-                    Scheme = "Bearer"
-                });
-                option.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type=ReferenceType.SecurityScheme,
-                    Id="Bearer"
-                }
-            },
-            new string[]{}
-        }
-    });
-            });
-            builder.Services.AddScoped<IFeedbackService, FeedBackService>();
-
-            builder.Services.AddScoped<IFeedBackRepo, FeedbackRepository>();
-            builder.Services.AddAutoMapper(typeof(FeedbackProfile));
-            builder.Services.AddAutoMapper(typeof(ProductReviewProfile));
-            builder.Services.AddAutoMapper(typeof(ShoppingCartProfile));
-            builder.Services.AddScoped<IReviewProductRepo, ReviewProductRepo>();
-            builder.Services.AddScoped<IReviewProductService, ProductReviewService>();
-            builder.Services.AddScoped<IProductService, ProductService>();
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            builder.Services.AddScoped<ICategoryService, CategoryService>();
-            builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
-            builder.Services.AddScoped<IShoppingCartRepo, ShoppingCartRepo>();
-            builder.Services.AddAutoMapper(typeof(CategoryProfile));
-            builder.Services.AddScoped<GetTokenServices>();
-            builder.Services.AddScoped<GoogleTokenValidator>();
-           
-            builder.Services.AddScoped<SendEmailService>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-
-            builder.Services.AddScoped<IShoppingServiece, ShoppingServiece>();
-
-            builder.Services.AddScoped<IShipmentRepo, ShipmentRepo>();
-            builder.Services.AddScoped<IShipmentService, ShipmentService>();
-
-            builder.Services.AddAutoMapper(typeof(ShipmentProfile));
-
-            builder.Services.AddScoped<IOrderRepo, OrderRepo>();
-            builder.Services.AddScoped<IShippingZoneRepo, ShippingZoneRepo>();
-            builder.Services.AddScoped<IShippingService, ShippingService>();
-            builder.Services.AddScoped<IDiscountRepo, DiscountRepo>();
-            builder.Services.AddScoped<IOrderService, OrderServiece>();
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            builder.Services.AddScoped<IDiscountService, DiscountService>();
-            builder.Services.AddScoped<INotifiRepo, NotitfiRepo>();
-            builder.Services.AddScoped<INotificationService, NotificationService>();
-            builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
-            builder.Services.AddScoped<IPaymentService, PaymentService>();
-            builder.Services.AddScoped<IPaymobService, PaymobService>();
-            builder.Services.AddScoped<IRedisCahse,RedisCahse>();
-
-            builder.Services.AddHttpClient<IPaymobService, PaymobService>();
-
-            builder.Services.AddAutoMapper(typeof(NotificationProfile));
-
-
-            builder.Services.AddSignalR();
-
-
-            builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
-            builder.Services.AddScoped<IWishlistService, WishlistService>();
-
-
-            builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
-            builder.Services.AddScoped<IUserAddressService, UserAddressService>();
-            builder.Services.AddScoped<IWithdrawalRepository, WithdrawalRepository>();
-            builder.Services.AddScoped<IWithdrawalService, WithdrawalService>();
-            builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
-            builder.Services.AddScoped<ISellerWalletRepository, SellerWalletRepository>();
-            builder.Services.AddScoped<ISellerWalletService, SellerWalletService>();
-            builder.Services.AddScoped<ISellerService, SellerService>();
-            builder.Services.AddScoped<ISellerRepository, SellerRepository>();
-            builder.Services.AddScoped<ISendEmailService, SendEmailService>();
-            builder.Services.AddHttpContextAccessor();
-
-            builder.Services.AddScoped<IAdminService, AdminService>();
-
-            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
-
-            builder.Services.AddHostedService<EmailBackgroundWorker>();
-            builder.Services.AddHostedService<NotificationBackGroundWorker>();
-            builder.Services.AddSingleton<IEmailChannel, EmailChannel>();
-            builder.Services.AddSingleton<INotificationChannel, NotificationChannel>();
-
+            builder.Services.AddInfrastructureServices(builder.Configuration); // بيكلم الـ Infra
+            builder.Services.AddApplicationServices();                         // بيكلم الـ App
+            builder.Services.AddApiConfigurations(builder.Configuration);
             
             builder.Services.AddScoped<IPhotoService, PhotoService>();
 
