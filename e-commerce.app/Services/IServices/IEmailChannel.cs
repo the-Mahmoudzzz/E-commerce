@@ -1,8 +1,8 @@
 public interface IEmailChannel
 {
 
-     Task AddEmailTaskAsync(UserRegisteredEvent emailEvent, CancellationToken ct = default);
+     Task AddEmailTaskAsync(UserEmailEvent emailEvent, CancellationToken ct = default);
 
 
-    IAsyncEnumerable<UserRegisteredEvent> ReadAllAsync(CancellationToken ct = default);
+    IAsyncEnumerable<UserEmailEvent> ReadAllAsync(CancellationToken ct = default);
 }
