@@ -22,7 +22,6 @@ namespace e_commerce.app.Services.Implementation
         private readonly IRefreshTokenRepository _refreshRepo;
         private readonly GetTokenServices _tokenService;
         private readonly IEmailChannel _emailChannel;
-        private readonly ISendEmailService _emailService;
         private readonly GoogleTokenValidator _googleTokenValidator;
         private readonly IShoppingCartRepo _cartrepo;
 
@@ -41,7 +40,6 @@ namespace e_commerce.app.Services.Implementation
             _emailChannel = emailChannel;
             _googleTokenValidator = googleTokenValidator;
             _cartrepo = cartrepo;
-            _emailService = emailService;
         }
 
         public async Task RegisterAsync(RegisterDTO dto, string baseUrl)
@@ -89,7 +87,7 @@ namespace e_commerce.app.Services.Implementation
             var code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             var link = $"{baseUrl}/api/account/confirm-email?email={user.Email}&code={code}";
 
-            var userEvent = new UserRegisteredEvent(user.Email, user.UserName, dto.UserRole.ToString(), link);
+            var userEvent = new UserEmailEvent(user.Email, "Welcome to our E-Commerce Platform!", $"<h1>Hello {user.UserName}</h1><p>Your account ({dto.UserRole}) has been created successfully.</p><p>Please click the link below to confirm your email address:</p><p><a href='{link}' target='_blank'>Confirm Email</a></p>");
             await _emailChannel.AddEmailTaskAsync(userEvent);
         }
 
@@ -238,11 +236,14 @@ new Dictionary<string, string[]>
 
             await _userManager.UpdateAsync(user);
 
-            await _emailService.SendEmailAsync(
-                user.Email,
-                "Reset Password OTP",
-                $"OTP: <b>{otp}</b> (valid for 10 minutes)",
-                CancellationToken.None);
+            await _emailChannel.AddEmailTaskAsync(
+                new UserEmailEvent(
+                    user.Email,
+                    "Reset Password OTP",
+                    $"OTP: <b>{otp}</b> (valid for 10 minutes)"
+                ),
+                CancellationToken.None
+            );
         }
 
         public async Task ResetPasswordAsync(string email, string otp, string newPassword)

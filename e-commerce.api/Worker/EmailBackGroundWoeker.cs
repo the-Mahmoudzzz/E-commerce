@@ -35,18 +35,18 @@ namespace e_commerce.app.Workers
                         using var scope = _scopeFactory.CreateScope();
                         
                         var emailService = scope.ServiceProvider.GetRequiredService<ISendEmailService>();
-                        string subject = "Welcome to our E-Commerce Platform!";
-                        string body = $"<h1>Hello {userEvent.FullName}</h1><p>Your account ({userEvent.Role}) has been created successfully.</p><p>Please click the link below to confirm your email address:</p><p><a href='{userEvent.ConfirmationLink}' target='_blank'>Confirm Email</a></p>";
+                        string subject = userEvent.Subject;
+                        string body = userEvent.Body;
 
-                        _logger.LogInformation($"Sending email to {userEvent.Email}...");
+                        _logger.LogInformation($"Sending email to {userEvent.ToEmail}...");
 
-                        await emailService.SendEmailAsync(userEvent.Email, subject, body, stoppingToken);
+                        await emailService.SendEmailAsync(userEvent.ToEmail, subject, body, stoppingToken);
 
-                        _logger.LogInformation($" Email sent successfully to {userEvent.Email}");
+                        _logger.LogInformation($" Email sent successfully to {userEvent.ToEmail}");
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"Failed to send email to {userEvent.Email}");
+                        _logger.LogError(ex, $"Failed to send email to {userEvent.ToEmail}");
                     }
                 }
             }

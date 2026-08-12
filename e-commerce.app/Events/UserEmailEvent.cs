@@ -1,0 +1,1 @@
+public record UserEmailEvent(string ToEmail,string Subject,string Body);
