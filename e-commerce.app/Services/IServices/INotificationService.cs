@@ -14,7 +14,7 @@ namespace e_commerce.app.Services.IServices
         Task<IEnumerable<NotifcationDto>> GetALLAsync(PaginationParamsDto pagination);
         Task<IEnumerable<NotifcationDto>> GetALLUserNotifiAsync(int userid);
         Task<NotifcationDto> GetByidAsync(int id);
-        Task AddNotifiAsync(CreateNotificationDto notification);
+        Task AddNotifiAsync(CreateNotificationDto notification,CancellationToken ct = default);
         Task Delete(int id);
         Task MarkAsReadAsync(int userid,int id);
         Task MarkAllAsReadAsync(int userid);

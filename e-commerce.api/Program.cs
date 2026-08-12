@@ -177,7 +177,9 @@ namespace e_commerce.api
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
             builder.Services.AddHostedService<EmailBackgroundWorker>();
+            builder.Services.AddHostedService<NotificationBackGroundWorker>();
             builder.Services.AddSingleton<IEmailChannel, EmailChannel>();
+            builder.Services.AddSingleton<INotificationChannel, NotificationChannel>();
 
             
             builder.Services.AddScoped<IPhotoService, PhotoService>();

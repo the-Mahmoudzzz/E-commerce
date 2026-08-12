@@ -30,7 +30,7 @@ namespace e_commerce.app.Services.Implementation
             _logger = logger;
         }
 
-        public async Task AddNotifiAsync(CreateNotificationDto dto)
+        public async Task AddNotifiAsync(CreateNotificationDto dto, CancellationToken ct = default)
         {
             // ✅ Validate المحتوى
             if (string.IsNullOrWhiteSpace(dto.Message))
